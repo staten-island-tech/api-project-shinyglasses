@@ -1,3 +1,4 @@
+const tastyKey = import.meta.env.VITE_API_KEY_TASTY;
 async function getData(query) {
   try {
     const response = await fetch(
@@ -5,7 +6,7 @@ async function getData(query) {
       {
         method: "GET",
         headers: {
-          'x-rapidapi-key': '8ce48d3c94mshbfaa3d43231c3cap1d8fe3jsn96a6cea6e304',
+          'x-rapidapi-key': tastyKey,
           "x-rapidapi-host": "tasty.p.rapidapi.com"
         }
       }
@@ -27,11 +28,10 @@ async function getData(query) {
 getData('chicken soup');
 /* beauty url, cook time, description, 
 keywords (not an array, its a string), name, num_servings,
-nutrition & price are [Object] gotta actually make the data available
-probably i can use another api to get a personalized price based on location
+nutrition & price are [Object] gotta actually make the data available,tags, tips summary?, total time minutes,, topics, yield,
+original video url, prep time*/
 
-original_video_url, prep time*/
-/* data = 
+/* 
 {
       approved_at: 1542683016,
       aspect_ratio: '1:1',
@@ -88,66 +88,8 @@ original_video_url, prep time*/
       video_id: 70524,
       video_url: 'https://vid.tasty.co/output/117803/hls24_1543624762.m3u8',
       yields: 'Servings: 6-8'
-    },
-    {
-      approved_at: 1497033938,
-      aspect_ratio: '1:1',
-      beauty_url: null,
-      brand: null,
-      brand_id: null,
-      buzz_id: null,
-      canonical_id: 'recipe:661',
-      compilations: [Array],
-      cook_time_minutes: 225,
-      country: 'ZZ',
-      created_at: 1493236040,
-      credits: [Array],
-      description: 'This dish is the ultimate comfort food, featuring a rich and creamy soup base with classic nacho flavors like black beans, tomatoes, and tons of cheese. The best part? It can be made in a slow cooker, making it perfect for a busy weeknight meal.',
-      draft_status: 'published',
-      facebook_posts: [],
-      id: 661,
-      inspired_by_url: null,
-      instructions: [Array],
-      is_app_only: false,
-      is_one_top: false,
-      is_shoppable: true,
-      is_subscriber_content: false,
-      keywords: 'cheddar, cheese, chicken, easy, mexican, monterey jack, nachos, slow. cooker. nacho, soup, tex-mex',
-      language: 'eng',
-      name: 'Slow Cooker Nacho Soup',
-      num_servings: 6,
-      nutrition: [Object],
-      nutrition_visibility: 'auto',
-      original_video_url: 'https://s3.amazonaws.com/video-api-prod/assets/9721382ae2404782ae77660b42a6b2c4/BFV15237_NachoSoup_FINAL_FB_v2.mp4',
-      prep_time_minutes: 15,
-      price: [Object],
-      promotion: 'full',
-      renditions: [Array],
-      sections: [Array],
-      seo_path: '8757513,64444,64457',
-      seo_title: null,
-      servings_noun_plural: 'servings',
-      servings_noun_singular: 'serving',
-      show: [Object],
-      show_id: 17,
-      slug: 'slow-cooker-nacho-soup',
-      tags: [Array],
-      thumbnail_alt_text: '',
-      thumbnail_url: 'https://img.buzzfeed.com/video-api-prod/assets/2926d579958a48afb79e7e0da7771c21/FB_1.jpg',
-      tips_and_ratings_enabled: true,
-      tips_summary: [Object],
-      topics: [Array],
-      total_time_minutes: 240,
-      total_time_tier: null,
-      updated_at: 1696632850,
-      user_ratings: [Object],
-      video_ad_content: 'none',
-      video_id: 9158,
-      video_url: 'https://vid.tasty.co/output/17167/low_1481236016.m3u8',
-      yields: ''
     }
-  ]
-}*/
+*/
 
 function insertCards() {
 }
