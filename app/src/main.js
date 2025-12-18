@@ -1,4 +1,6 @@
 const tastyKey = import.meta.env.VITE_API_KEY_TASTY;
+console.log(tastyKey);  
+
 async function getData(query) {
   try {
     const response = await fetch(
@@ -25,13 +27,35 @@ async function getData(query) {
   }
 }
 
-getData('chicken soup');
+/* const data = getData('chicken soup');
+data.array.forEach(element => {console.log(element.beauty_url)
+  console.log(element.cook_time_minutes);
+  console.log(element.description);
+  console.log(element.keywords);
+  console.log(element.name);
+  console.log(element.num_servings);
+  console.log(element.nutrition);
+  console.log(element.price);
+  console.log(element.tags);
+  console.log(element.tips_summary);
+  console.log(element.total_time_minutes);
+  console.log(element.topics);
+  console.log(element.yields);
+  console.log(element.original_video_url);
+  console.log(element.prep_time_minutes);
+}); */
+const parameters = ['beauty_url', 'cook_time_minutes', 'description',
+  'keywords', 'name', 'num_servings', 'nutrition',
+  'price', 'tags', 'tips_summary', 'total_time_minutes',
+  'topics', 'yields', 'original_video_url', 'prep_time_minutes'];
+
 /* beauty url, cook time, description, 
 keywords (not an array, its a string), name, num_servings,
-nutrition & price are [Object] gotta actually make the data available,tags, tips summary?, total time minutes,, topics, yield,
+nutrition & price are [Object] gotta actually make the data available,tags, tips summary?, total time minutes, topics, yield,
 original video url, prep time*/
 
 /* 
+
 {
       approved_at: 1542683016,
       aspect_ratio: '1:1',
