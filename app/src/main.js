@@ -1,5 +1,4 @@
 const tastyKey = import.meta.env.VITE_API_KEY_TASTY;
-console.log(tastyKey);  
 
 async function getData(query) {
   try {
@@ -27,6 +26,43 @@ async function getData(query) {
   }
 }
 
+function insertCard(item) {
+  const container = document.getElementById('cards');
+  //card preview, its template code probably wont work bc idk the real properties
+  const html = `<article><h2>${item.name}</h2><img src=${item.img}</article>'`
+  container.insertAdjacentHTML('beforeend', html)
+}
+
+export class Savefiles {
+//saves aren't strictly needed but i dont wanna run out of api keys so im gonna store api data in localstorage
+static createSavefile(inventory, theme) {
+const userProfile = { 
+  'inventory': inventory,
+  'theme': theme, 
+};
+localStorage.setItem('save', JSON.stringify(userProfile));
+}
+
+static updateSaveInventory() {
+  save.inventory = tempInventory;
+  localStorage.setItem('save', JSON.stringify(save));
+  console.log(localStorage)
+}
+
+static updateTheme(newTheme) {
+  const save = this.loadSavefile();
+  save.theme = newTheme;
+  localStorage.setItem('save', JSON.stringify(save));
+  console.log(localStorage)
+}
+
+static loadSavefile() {
+  return JSON.parse(localStorage.getItem('save'));
+}                
+}
+function getUserSearch() {
+  
+}
 /* const data = getData('chicken soup');
 data.array.forEach(element => {console.log(element.beauty_url)
   console.log(element.cook_time_minutes);
@@ -48,14 +84,8 @@ const parameters = ['beauty_url', 'cook_time_minutes', 'description',
   'keywords', 'name', 'num_servings', 'nutrition',
   'price', 'tags', 'tips_summary', 'total_time_minutes',
   'topics', 'yields', 'original_video_url', 'prep_time_minutes'];
-
-/* beauty url, cook time, description, 
-keywords (not an array, its a string), name, num_servings,
-nutrition & price are [Object] gotta actually make the data available,tags, tips summary?, total time minutes, topics, yield,
-original video url, prep time*/
-
+//
 /* 
-
 {
       approved_at: 1542683016,
       aspect_ratio: '1:1',
@@ -115,5 +145,4 @@ original video url, prep time*/
     }
 */
 
-function insertCards() {
-}
+                      
