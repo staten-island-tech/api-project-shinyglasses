@@ -25,11 +25,28 @@ async function getData(query) {
     console.error("Error fetching Tasty data:", error);
   }
 }
+//getData('chicken soup');
 
 function insertCard(item) {
   const container = document.getElementById('cards');
   //card preview, its template code probably wont work bc idk the real properties
-  const html = `<article><h2>${item.name}</h2><img src=${item.img}</article>'`
+  const html = `<article>
+  <h2>${item.name}</h2><img src=${item.img}
+  </article>'`
+  /*  console.log(element.cook_time_minutes);
+  console.log(element.description);
+  console.log(element.keywords);
+  console.log(element.name);
+  console.log(element.num_servings);
+  console.log(element.nutrition);
+  console.log(element.price);
+  console.log(element.tags);
+  console.log(element.tips_summary);
+  console.log(element.total_time_minutes);
+  console.log(element.topics);
+  console.log(element.yields);
+  console.log(element.original_video_url);
+  console.log(element.prep_time_minutes); */
   container.insertAdjacentHTML('beforeend', html)
 }
 
