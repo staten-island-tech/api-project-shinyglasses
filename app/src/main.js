@@ -1,5 +1,5 @@
 const tastyKey = import.meta.env.VITE_API_KEY_TASTY;
-
+let inventory = [];
 async function getData(query) {
   try {
     const response = await fetch(
@@ -19,14 +19,18 @@ async function getData(query) {
 
     const data = await response.json();
     console.log(data);
+    inventory.push(data);
+    console.log(inventory)  
+    Savefiles.createSavefile(inventory, 'light');
+    console.log(localStorage)
     return data;
 
   } catch (error) {
     console.error("Error fetching Tasty data:", error);
   }
 }
-//getData('chicken soup');
 
+console.log(localStorage);
 function insertCard(item) {
   const container = document.getElementById('cards');
   //card preview, its template code probably wont work bc idk the real properties
@@ -77,6 +81,7 @@ static loadSavefile() {
   return JSON.parse(localStorage.getItem('save'));
 }                
 }
+
 function getUserSearch() {
   
 }
@@ -161,5 +166,3 @@ const parameters = ['beauty_url', 'cook_time_minutes', 'description',
       yields: 'Servings: 6-8'
     }
 */
-
-                      
