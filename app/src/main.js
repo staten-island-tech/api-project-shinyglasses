@@ -1,58 +1,88 @@
-const tastyKey = import.meta.env.VITE_API_KEY_TASTY;
+let naturalDisasterTypes = ['Earthquakes', 'Tsunamis', 'Hurricanes', 'Tornadoes', 'Floods', 'Wildfires'];
+/* to prevent the # of earthquakes from being absurdly long the restrictions are
+cmlimit=50, from the past decade
+*/
 let inventory = [];
-async function getData(query) {
+
+async function getData(year) {
   try {
     const response = await fetch(
-      `https://tasty.p.rapidapi.com/recipes/list?from=0&size=20&q=${query}`,
-      {
-        method: "GET",
-        headers: {
-          'x-rapidapi-key': tastyKey,
-          "x-rapidapi-host": "tasty.p.rapidapi.com"
-        }
-      }
+      `https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:${year}_earthquakes&cmlimit=50&cmtype=page&cmnamespace=0&format=json&origin=*`,
     );
+    //catmembers only gives meta data -> need to make another api call or js restructure this call
+    //probably up cmlimit and filter later
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
 
+    const data = await response.json();
+    const earthquakes = data.query.categorymembers;
+    const titles = earthquakes.map(earthquake => earthquake.title);
+    titles.shift(0, 1); //the first entry is always a List of {year} earthquakes page, which isnt needed
+    return titles;
+
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+async function getArticleData(page) {
+  try {
+    const response = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=parse&page=${page}&format=json&origin=*`,
+    );
+    //catmembers only gives meta data -> need to make another api call or js restructure this call
+    //probably up cmlimit and filter later
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
     console.log(data);
-    inventory.push(data);
-    console.log(inventory)  
-    Savefiles.createSavefile(inventory, 'light');
-    console.log(localStorage)
     return data;
 
   } catch (error) {
-    console.error("Error fetching Tasty data:", error);
+    console.error("Error fetching data:", error);
   }
 }
 
-console.log(localStorage);
-function insertCard(item) {
+async function getImageUrls(page) {
+
+}
+getArticleData('1976_Tangshan_earthquake');
+async function fetchDecadeData() {
+  const data = [];
+
+  for (let year = 2016; year <= 2025; year++) {
+    const yearData = await getData(year); 
+    data.push(yearData);
+  }
+  return data.flat();
+}
+let data = [];
+data = await fetchDecadeData();
+console.log(data);
+function getRandomEarthquakes(amount, array) { 
+  let randomEarthquakes = [];
+  for (let i = 0; i < amount; i++) {
+    const randomIndex = Math.floor(Math.random() * array.length);
+    randomEarthquakes.push(array[randomIndex]); 
+    array.splice(randomIndex, 1); 
+  }
+  return randomEarthquakes;
+}
+let earthquakesToDisplay = [];
+earthquakesToDisplay = getRandomEarthquakes(20, data);
+
+async function insertCard(item) {
+  const articleData = await getArticleData(item);
+  console.log(articleData)
   const container = document.getElementById('cards');
-  //card preview, its template code probably wont work bc idk the real properties
   const html = `<article>
-  <h2>${item.name}</h2><img src=${item.img}
+  <h2>${item}</h2><img src=${item.img}
   </article>'`
-  /*  console.log(element.cook_time_minutes);
-  console.log(element.description);
-  console.log(element.keywords);
-  console.log(element.name);
-  console.log(element.num_servings);
-  console.log(element.nutrition);
-  console.log(element.price);
-  console.log(element.tags);
-  console.log(element.tips_summary);
-  console.log(element.total_time_minutes);
-  console.log(element.topics);
-  console.log(element.yields);
-  console.log(element.original_video_url);
-  console.log(element.prep_time_minutes); */
   container.insertAdjacentHTML('beforeend', html)
 }
+insertCard('1976_Tangshan_earthquake');
 
 export class Savefiles {
 //saves aren't strictly needed but i dont wanna run out of api keys so im gonna store api data in localstorage
@@ -85,84 +115,3 @@ static loadSavefile() {
 function getUserSearch() {
   
 }
-/* const data = getData('chicken soup');
-data.array.forEach(element => {console.log(element.beauty_url)
-  console.log(element.cook_time_minutes);
-  console.log(element.description);
-  console.log(element.keywords);
-  console.log(element.name);
-  console.log(element.num_servings);
-  console.log(element.nutrition);
-  console.log(element.price);
-  console.log(element.tags);
-  console.log(element.tips_summary);
-  console.log(element.total_time_minutes);
-  console.log(element.topics);
-  console.log(element.yields);
-  console.log(element.original_video_url);
-  console.log(element.prep_time_minutes);
-}); */
-const parameters = ['beauty_url', 'cook_time_minutes', 'description',
-  'keywords', 'name', 'num_servings', 'nutrition',
-  'price', 'tags', 'tips_summary', 'total_time_minutes',
-  'topics', 'yields', 'original_video_url', 'prep_time_minutes'];
-//
-/* 
-{
-      approved_at: 1542683016,
-      aspect_ratio: '1:1',
-      beauty_url: 'https://img.buzzfeed.com/video-api-prod/assets/61a5464d4574449a94d7c785e85708ad/beauty.jpg',
-      brand: null,
-      brand_id: null,
-      buzz_id: null,
-      canonical_id: 'recipe:4563',
-      compilations: [Array],
-      cook_time_minutes: 25,
-      country: 'US',
-      created_at: 1542416110,
-      credits: [Array],
-      description: "Warm up with this comforting Chicken Meatball Soup that's loaded with tender veggies and savory meatballs. It's a hearty, flavorful meal that'll leave you feeling satisfied and cozy.",
-      draft_status: 'published',
-      facebook_posts: [],
-      id: 4563,
-      inspired_by_url: 'https://damndelicious.net/2018/07/29/italian-wedding-soup/',
-      instructions: [Array],
-      is_app_only: false,
-      is_one_top: false,
-      is_shoppable: true,
-      is_subscriber_content: false,
-      keywords: 'chicken soup, chicken stock, easy, fall soup, italian wedding soup, meatball recipe, orzo, swiss chard, winter',
-      language: 'eng',
-      name: 'Chicken Meatball Soup',
-      num_servings: 6,
-      nutrition: [Object],
-      nutrition_visibility: 'auto',
-      original_video_url: 'https://s3.amazonaws.com/video-api-prod/assets/a957d0c5ffe14dc8aaf478d2fdd38367/SoupOO.mp4',
-      prep_time_minutes: 20,
-      price: [Object],
-      promotion: 'full',
-      renditions: [Array],
-      sections: [Array],
-      seo_path: '8757513,9295874,64453',
-      seo_title: '',
-      servings_noun_plural: 'servings',
-      servings_noun_singular: 'serving',
-      show: [Object],
-      show_id: 17,
-      slug: 'chicken-meatball-soup',
-      tags: [Array],
-      thumbnail_alt_text: '',
-      thumbnail_url: 'https://s3.amazonaws.com/video-api-prod/assets/6ec67fc6adc0425d9e0216ec0d0e8797/FBthumb.jpg',
-      tips_and_ratings_enabled: true,
-      tips_summary: [Object],
-      topics: [Array],
-      total_time_minutes: 45,
-      total_time_tier: [Object],
-      updated_at: 1683237600,
-      user_ratings: [Object],
-      video_ad_content: 'none',
-      video_id: 70524,
-      video_url: 'https://vid.tasty.co/output/117803/hls24_1543624762.m3u8',
-      yields: 'Servings: 6-8'
-    }
-*/
