@@ -1,7 +1,3 @@
-let naturalDisasterTypes = ['Earthquakes', 'Tsunamis', 'Hurricanes', 'Tornadoes', 'Floods', 'Wildfires'];
-/* to prevent the # of earthquakes from being absurdly long the restrictions are
-cmlimit=50, from the past decade
-*/
 let inventory = [];
 
 async function getData(year) {
@@ -38,6 +34,29 @@ async function getArticleData(page) {
 
     const data = await response.json();
     console.log(data);
+
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+function getTempImageUrl(data) {
+  const imgUrl = data.parse.images[0];
+  console.log(imgUrl);
+  return imgUrl;
+}
+
+async function getFinalImageUrl(tempUrl, page) {
+try {
+    const response = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&page=${page}&prop=imageinfo&iiprop=url&titles=File:${image}&format=json&origin=*`,
+    );
+    //catmembers only gives meta data -> need to make another api call or js restructure this call
+    //probably up cmlimit and filter later
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log(data);
     return data;
 
   } catch (error) {
@@ -45,9 +64,7 @@ async function getArticleData(page) {
   }
 }
 
-async function getImageUrls(page) {
 
-}
 getArticleData('1976_Tangshan_earthquake');
 async function fetchDecadeData() {
   const data = [];
@@ -58,9 +75,13 @@ async function fetchDecadeData() {
   }
   return data.flat();
 }
+
 let data = [];
 data = await fetchDecadeData();
 console.log(data);
+const imgUrl = getTempImageUrl(data);
+getFinalImageUrl(imgUrl, page );
+
 function getRandomEarthquakes(amount, array) { 
   let randomEarthquakes = [];
   for (let i = 0; i < amount; i++) {
@@ -70,19 +91,20 @@ function getRandomEarthquakes(amount, array) {
   }
   return randomEarthquakes;
 }
+
 let earthquakesToDisplay = [];
 earthquakesToDisplay = getRandomEarthquakes(20, data);
 
-async function insertCard(item) {
+async function insertCard(item,imgUrl) {
   const articleData = await getArticleData(item);
   console.log(articleData)
   const container = document.getElementById('cards');
   const html = `<article>
-  <h2>${item}</h2><img src=${item.img}
+  <h2>${item}</h2><img src=${imgUrl}>
   </article>'`
   container.insertAdjacentHTML('beforeend', html)
 }
-insertCard('1976_Tangshan_earthquake');
+insertCard('1976_Tangshan_earthquake', imgUrl);
 
 export class Savefiles {
 //saves aren't strictly needed but i dont wanna run out of api keys so im gonna store api data in localstorage
