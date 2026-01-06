@@ -27,8 +27,6 @@ async function getArticleData(page) {
     const response = await fetch(
       `https://en.wikipedia.org/w/api.php?action=parse&page=${page}&format=json&origin=*`,
     );
-    //catmembers only gives meta data -> need to make another api call or js restructure this call
-    //probably up cmlimit and filter later
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -43,59 +41,57 @@ async function getArticleData(page) {
 }
 function getTempImageUrl(data) {
   console.log(data)
-  const imgUrl = data.parse.images[0];
-  console.log(imgUrl);
-  return imgUrl;
+  for (const img of data.parse.images) {
+    if (img.toLowerCase().includes('map')) {
+      const imgUrl = img;
+      if (imgUrl) {
+      console.log(imgUrl);
+      return imgUrl;
+    }
+    }
+  }
 }
 
-async function getFinalImageUrl(tempUrl, page) {
+async function getFinalImageUrl(tempUrl) {
 try {
     const response = await fetch(
       `https://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=File:${tempUrl}&format=json&origin=*`,
     );
-    //catmembers only gives meta data -> need to make another api call or js restructure this call
-    //probably up cmlimit and filter later
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json();
-    console.log(data);
-    return data;
+    //error handling for if there arent any images
+    if (!data.query.pages[-1].imageinfo) {
+      console.error("No images");
+      return null;
+    } else {
+      return data.query.pages[-1].imageinfo[0].url;
+    }
 
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
 /*{
-    "continue": {
-        "iistart": "2018-08-22T00:07:08Z",
-        "continue": "||"
-    },
+    "batchcomplete": "",
     "query": {
         "normalized": [
             {
-                "from": "File:2018_Venezuela_earthquake.jpg",
-                "to": "File:2018 Venezuela earthquake.jpg"
+                "from": "File:undefined",
+                "to": "File:Undefined"
             }
         ],
         "pages": {
             "-1": {
                 "ns": 6,
-                "title": "File:2018 Venezuela earthquake.jpg",
+                "title": "File:Undefined",
                 "missing": "",
-                "known": "",
-                "imagerepository": "shared",
-                "imageinfo": [
-                    {
-                        "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/2018_Venezuela_earthquake.jpg",
-                        "descriptionurl": "https://commons.wikimedia.org/wiki/File:2018_Venezuela_earthquake.jpg",
-                        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=71855383"
-                    }
-                ]
+                "imagerepository": ""
             }
         }
     }
-} */
+}*/
 async function fetchDecadeData() {
   const data = [];
 
@@ -146,6 +142,12 @@ for (const earthquake of earthquakesToDisplay) {
   const articleData = await getArticleData(earthquake);
   console.log(articleData);
   const imgUrl = getTempImageUrl(articleData);
-  const finalImageUrl = await getFinalImageUrl(imgUrl, earthquake);
+  if (!imgUrl) {
+    earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
+    data = data.filter(eq => eq !== earthquake)
+    earthquakesToDisplay.push(getRandomEarthquakes(1, data));
+    continue;
+  }
+  const finalImageUrl = await getFinalImageUrl(imgUrl);
   insertCard(earthquake, finalImageUrl);
 }
