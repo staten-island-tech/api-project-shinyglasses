@@ -14,11 +14,12 @@ async function getData(year) {
     const data = await response.json();
     const earthquakes = data.query.categorymembers;
     const titles = earthquakes.map(earthquake => earthquake.title);
-    titles.shift(0, 1); //the first entry is always a List of {year} earthquakes page, which isnt needed
+    titles.shift(); //the first entry is always a List of {year} earthquakes page, which isnt needed
     return titles;
 
   } catch (error) {
     console.error("Error fetching data:", error);
+    return [];
   }
 }
 async function getArticleData(page) {
@@ -34,12 +35,14 @@ async function getArticleData(page) {
 
     const data = await response.json();
     console.log(data);
+    return data;
 
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
 function getTempImageUrl(data) {
+  console.log(data)
   const imgUrl = data.parse.images[0];
   console.log(imgUrl);
   return imgUrl;
@@ -48,7 +51,7 @@ function getTempImageUrl(data) {
 async function getFinalImageUrl(tempUrl, page) {
 try {
     const response = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&page=${page}&prop=imageinfo&iiprop=url&titles=File:${image}&format=json&origin=*`,
+      `https://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=File:${tempUrl}&format=json&origin=*`,
     );
     //catmembers only gives meta data -> need to make another api call or js restructure this call
     //probably up cmlimit and filter later
@@ -63,24 +66,50 @@ try {
     console.error("Error fetching data:", error);
   }
 }
-
-
-getArticleData('1976_Tangshan_earthquake');
+/*{
+    "continue": {
+        "iistart": "2018-08-22T00:07:08Z",
+        "continue": "||"
+    },
+    "query": {
+        "normalized": [
+            {
+                "from": "File:2018_Venezuela_earthquake.jpg",
+                "to": "File:2018 Venezuela earthquake.jpg"
+            }
+        ],
+        "pages": {
+            "-1": {
+                "ns": 6,
+                "title": "File:2018 Venezuela earthquake.jpg",
+                "missing": "",
+                "known": "",
+                "imagerepository": "shared",
+                "imageinfo": [
+                    {
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/2018_Venezuela_earthquake.jpg",
+                        "descriptionurl": "https://commons.wikimedia.org/wiki/File:2018_Venezuela_earthquake.jpg",
+                        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=71855383"
+                    }
+                ]
+            }
+        }
+    }
+} */
 async function fetchDecadeData() {
   const data = [];
 
   for (let year = 2016; year <= 2025; year++) {
-    const yearData = await getData(year); 
+    try {
+    const yearData = await getData(year);
     data.push(yearData);
+  } catch (err) {
+    console.error("Failed for year:", year, err);
+  }
+
   }
   return data.flat();
 }
-
-let data = [];
-data = await fetchDecadeData();
-console.log(data);
-const imgUrl = getTempImageUrl(data);
-getFinalImageUrl(imgUrl, page );
 
 function getRandomEarthquakes(amount, array) { 
   let randomEarthquakes = [];
@@ -92,9 +121,6 @@ function getRandomEarthquakes(amount, array) {
   return randomEarthquakes;
 }
 
-let earthquakesToDisplay = [];
-earthquakesToDisplay = getRandomEarthquakes(20, data);
-
 async function insertCard(item,imgUrl) {
   const articleData = await getArticleData(item);
   console.log(articleData)
@@ -104,36 +130,22 @@ async function insertCard(item,imgUrl) {
   </article>'`
   container.insertAdjacentHTML('beforeend', html)
 }
-insertCard('1976_Tangshan_earthquake', imgUrl);
-
-export class Savefiles {
-//saves aren't strictly needed but i dont wanna run out of api keys so im gonna store api data in localstorage
-static createSavefile(inventory, theme) {
-const userProfile = { 
-  'inventory': inventory,
-  'theme': theme, 
-};
-localStorage.setItem('save', JSON.stringify(userProfile));
-}
-
-static updateSaveInventory() {
-  save.inventory = tempInventory;
-  localStorage.setItem('save', JSON.stringify(save));
-  console.log(localStorage)
-}
-
-static updateTheme(newTheme) {
-  const save = this.loadSavefile();
-  save.theme = newTheme;
-  localStorage.setItem('save', JSON.stringify(save));
-  console.log(localStorage)
-}
-
-static loadSavefile() {
-  return JSON.parse(localStorage.getItem('save'));
-}                
-}
 
 function getUserSearch() {
   
+}
+
+let data = [];
+data = await fetchDecadeData();
+let earthquakesToDisplay = [];
+earthquakesToDisplay = getRandomEarthquakes(20, data);
+console.log(earthquakesToDisplay);
+
+
+for (const earthquake of earthquakesToDisplay) {
+  const articleData = await getArticleData(earthquake);
+  console.log(articleData);
+  const imgUrl = getTempImageUrl(articleData);
+  const finalImageUrl = await getFinalImageUrl(imgUrl, earthquake);
+  insertCard(earthquake, finalImageUrl);
 }
