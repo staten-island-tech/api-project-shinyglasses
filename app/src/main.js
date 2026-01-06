@@ -124,6 +124,7 @@ async function insertCard(item,imgUrl) {
   const html = `<article>
   <h2>${item}</h2><img src=${imgUrl}>
   </article>'`
+  //add severity and death toll? 
   container.insertAdjacentHTML('beforeend', html)
 }
 
