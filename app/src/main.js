@@ -121,9 +121,19 @@ async function insertCard(item,imgUrl) {
   const articleData = await getArticleData(item);
   console.log(articleData)
   const container = document.getElementById('cards');
-  const html = `<article>
-  <h2>${item}</h2><img src=${imgUrl}>
-  </article>'`
+  const html = `
+          <div class="card bg-base-100 w-96 shadow-sm rounded-box">
+            <figure>
+              <img src=${imgUrl} class='h-32 w-56'>
+            </figure>
+            <div class="card-body">
+              <h2 class="card-title">${item}</h2>
+              <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
+              <div class="card-actions justify-end">
+                <button class="btn btn-primary">Buy Now</button>
+              </div>
+            </div>
+          </div>`
   //add severity and death toll? 
   container.insertAdjacentHTML('beforeend', html)
 }
