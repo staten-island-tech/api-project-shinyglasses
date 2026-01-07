@@ -130,7 +130,7 @@ async function insertCard(item,imgUrl) {
               <h2 class="card-title">${item}</h2>
               <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
               <div class="card-actions justify-end">
-                <button class="btn btn-primary">Buy Now</button>
+                <button class="btn btn-primary">Access Article</button>
               </div>
             </div>
           </div>`
@@ -138,9 +138,26 @@ async function insertCard(item,imgUrl) {
   container.insertAdjacentHTML('beforeend', html)
 }
 
-function getUserSearch() {
-  
+function getUserFilters() {
+  const filterBtn = document.getElementById('filters');
+  filterBtn.addEventListener('click', () => {
+    const html = `
+    <dialog class='z-10'>
+      <form>
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year" />
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" />
+        <button type="submit">Apply Filters</button>
+      </form>
+    </dialog>`
+    document.body.insertAdjacentHTML('beforeend', html)
+    //year, location text areas
+    //submit btn
+    //need to make it so can't get multiple filter pop ups
+  })
 }
+getUserFilters();
 
 let data = [];
 data = await fetchDecadeData();
