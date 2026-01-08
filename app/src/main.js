@@ -176,16 +176,8 @@ async function insertCard(item) {
 function getUserFilters() {
   const filterBtn = document.getElementById('filters');
   filterBtn.addEventListener('click', () => {
-    const html = `
-    <dialog class='z-10'>
-      <form>
-        <label for="year">Year:</label>
-        <input type="text" id="year" name="year" />
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" />
-        <button type="submit">Apply Filters</button>
-      </form>
-    </dialog>`
+    const popup = document.getElementById('filter__popup');
+    popup.showModal()
     document.body.insertAdjacentHTML('beforeend', html)
     //year, location text areas
     //submit btn

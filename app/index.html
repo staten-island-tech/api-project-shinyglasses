@@ -30,6 +30,16 @@
       </details> -->
     </header>
     <div id="app">
+      <dialog class='z-10 w-500 h-1/4 flex m-auto rounded-box shadow-sm' id="filter__popup">
+      <form>
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year" />
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" />
+        <button type="submit">Apply Filters</button>
+      </form>
+    </dialog>
+
       <section id="cards" class="flex justify-center flex-wrap">
         
       </section>
