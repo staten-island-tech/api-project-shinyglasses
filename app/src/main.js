@@ -124,6 +124,11 @@ async function insertCard(item) {
   container.insertAdjacentHTML('beforeend', html)
 }
 
+function capitalizeTitles(earthquakes) {
+  for (const earthquake of earthquakes) {
+    earthquake.split
+  }
+}
 function getUserFilters() {
   const filterBtn = document.getElementById('filters');
   filterBtn.addEventListener('click', () => {
