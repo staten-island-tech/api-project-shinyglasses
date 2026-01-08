@@ -1,3 +1,4 @@
+import './style.css';
 let inventory = [];
 
 async function getData(year) {
@@ -39,7 +40,7 @@ async function getArticleData(page) {
     console.error("Error fetching data:", error);
   }
 }
-function getTempImageUrl(data) {
+/* function getTempImageUrl(data) {
   console.log(data)
   for (const img of data.parse.images) {
     if (img.toLowerCase().includes('map')) {
@@ -50,9 +51,9 @@ function getTempImageUrl(data) {
     }
     }
   }
-}
+} */
 
-async function getFinalImageUrl(tempUrl) {
+/* async function getFinalImageUrl(tempUrl) {
 try {
     const response = await fetch(
       `https://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=File:${tempUrl}&format=json&origin=*`,
@@ -72,7 +73,7 @@ try {
   } catch (error) {
     console.error("Error fetching data:", error);
   }
-}
+} */
 /*{
     "batchcomplete": "",
     "query": {
@@ -117,23 +118,57 @@ function getRandomEarthquakes(amount, array) {
   return randomEarthquakes;
 }
 
-async function insertCard(item,imgUrl) {
+async function insertCard(item) {
   const articleData = await getArticleData(item);
   console.log(articleData)
   const container = document.getElementById('cards');
   const html = `
-          <div class="card bg-base-100 w-96 shadow-sm rounded-box">
-            <figure>
-              <img src=${imgUrl} class='h-32 w-56'>
-            </figure>
-            <div class="card-body">
-              <h2 class="card-title">${item}</h2>
-              <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
-              <div class="card-actions justify-end">
-                <button class="btn btn-primary">Access Article</button>
-              </div>
-            </div>
-          </div>`
+          <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
+
+  <div class="flex items-start justify-between">
+    <h2 class="text-lg font-semibold leading-tight">
+      ${item}
+    </h2>
+    <span class="text-sm font-mono text-base-content/60">
+      YEAR
+    </span>
+  </div>
+
+  <div class="my-3 h-px bg-base-300"></div>
+
+  <div class="grid grid-cols-2 gap-4 text-sm">
+    <div>
+      <p class="text-base-content/60">Magnitude</p>
+      <p class="text-lg font-semibold">7.2</p>
+    </div>
+
+    <div>
+      <p class="text-base-content/60">Depth</p>
+      <p class="text-lg font-semibold">10 km</p>
+    </div>
+
+    <div>
+      <p class="text-base-content/60">Deaths</p>
+      <p class="text-lg font-semibold">~2,200</p>
+    </div>
+
+    <div>
+      <p class="text-base-content/60">Location</p>
+      <p class="text-lg font-semibold">Haiti</p>
+    </div>
+  </div>
+
+
+  <div class="mt-4 flex justify-end">
+    <a
+      href="#"
+      class="text-sm font-medium text-primary hover:underline"
+    >
+      View Article →
+    </a>
+  </div>
+</div>
+`
   //add severity and death toll? 
   container.insertAdjacentHTML('beforeend', html)
 }
@@ -169,13 +204,13 @@ console.log(earthquakesToDisplay);
 for (const earthquake of earthquakesToDisplay) {
   const articleData = await getArticleData(earthquake);
   console.log(articleData);
-  const imgUrl = getTempImageUrl(articleData);
-  if (!imgUrl) {
+  //const imgUrl = getTempImageUrl(articleData);
+  
     earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
     data = data.filter(eq => eq !== earthquake)
     earthquakesToDisplay.push(getRandomEarthquakes(1, data));
-    continue;
-  }
-  const finalImageUrl = await getFinalImageUrl(imgUrl);
-  insertCard(earthquake, finalImageUrl);
+
+  
+  // const finalImageUrl = await getFinalImageUrl(imgUrl);
+  insertCard(earthquake);
 }
