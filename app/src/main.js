@@ -1,5 +1,8 @@
 import './style.css';
-let inventory = [];
+
+let searchRequirements = [];
+
+//i should put my data as an array of objects
 
 async function getData(year) {
   try {
@@ -40,59 +43,7 @@ async function getArticleData(page) {
     console.error("Error fetching data:", error);
   }
 }
-/* function getTempImageUrl(data) {
-  console.log(data)
-  for (const img of data.parse.images) {
-    if (img.toLowerCase().includes('map')) {
-      const imgUrl = img;
-      if (imgUrl) {
-      console.log(imgUrl);
-      return imgUrl;
-    }
-    }
-  }
-} */
 
-/* async function getFinalImageUrl(tempUrl) {
-try {
-    const response = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=File:${tempUrl}&format=json&origin=*`,
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
-    //error handling for if there arent any images
-    if (!data.query.pages[-1].imageinfo) {
-      console.error("No images");
-      return null;
-    } else {
-      return data.query.pages[-1].imageinfo[0].url;
-    }
-
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-} */
-/*{
-    "batchcomplete": "",
-    "query": {
-        "normalized": [
-            {
-                "from": "File:undefined",
-                "to": "File:Undefined"
-            }
-        ],
-        "pages": {
-            "-1": {
-                "ns": 6,
-                "title": "File:Undefined",
-                "missing": "",
-                "imagerepository": ""
-            }
-        }
-    }
-}*/
 async function fetchDecadeData() {
   const data = [];
 
@@ -179,9 +130,6 @@ function getUserFilters() {
     const popup = document.getElementById('filter__popup');
     popup.showModal()
     document.body.insertAdjacentHTML('beforeend', html)
-    //year, location text areas
-    //submit btn
-    //need to make it so can't get multiple filter pop ups
   })
 }
 getUserFilters();
@@ -201,7 +149,6 @@ for (const earthquake of earthquakesToDisplay) {
     earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
     data = data.filter(eq => eq !== earthquake)
     earthquakesToDisplay.push(getRandomEarthquakes(1, data));
-
   
   // const finalImageUrl = await getFinalImageUrl(imgUrl);
   insertCard(earthquake);
