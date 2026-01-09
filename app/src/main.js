@@ -1,6 +1,7 @@
 import './style.css';
 
 let searchRequirements = [];
+let earthquakesToDisplay = [];
 
 //i should put my data as an array of objects
 
@@ -19,6 +20,10 @@ async function getData(year) {
     const earthquakes = data.query.categorymembers;
     const titles = earthquakes.map(earthquake => earthquake.title);
     titles.shift(); //the first entry is always a List of {year} earthquakes page, which isnt needed
+    titles.forEach(title => {
+      earthquakesToDisplay.push({'title': title})
+    });
+    console.log(earthquakesToDisplay)
     return titles;
 
   } catch (error) {
@@ -38,12 +43,16 @@ async function getArticleData(page) {
     const data = await response.json();
     console.log(data);
     return data;
-
+    //get mag and casualty data from here
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
-
+async function getArticleUrl(title) {
+  const formattedTitle = title.replace(/ /g, "_");
+  const baseUrl = 'https://en.wikipedia.org/wiki/';
+  return `${baseUrl}${formattedTitle}`;
+}
 async function fetchDecadeData() {
   const data = [];
 
@@ -51,10 +60,10 @@ async function fetchDecadeData() {
     try {
     const yearData = await getData(year);
     data.push(yearData);
+    
   } catch (err) {
     console.error("Failed for year:", year, err);
   }
-
   }
   return data.flat();
 }
@@ -71,7 +80,6 @@ function getRandomEarthquakes(amount, array) {
 
 async function insertCard(item) {
   const articleData = await getArticleData(item);
-  console.log(articleData)
   const container = document.getElementById('cards');
   const html = `
           <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
@@ -145,25 +153,19 @@ function closeSearchPopup() {
     popup.close();
   })
 }
-getUserFilters();
 
+getUserFilters();
 
 let data = [];
 data = await fetchDecadeData();
-let earthquakesToDisplay = [];
 earthquakesToDisplay = getRandomEarthquakes(20, data);
 console.log(earthquakesToDisplay);
 
 
 for (const earthquake of earthquakesToDisplay) {
   const articleData = await getArticleData(earthquake);
-  console.log(articleData);
-  //const imgUrl = getTempImageUrl(articleData);
-  
-    earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
-    data = data.filter(eq => eq !== earthquake)
-    earthquakesToDisplay.push(getRandomEarthquakes(1, data));
-  
-  // const finalImageUrl = await getFinalImageUrl(imgUrl);
+  earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
+  data = data.filter(eq => eq !== earthquake)
+  earthquakesToDisplay.push(getRandomEarthquakes(1, data));
   insertCard(earthquake);
 }
