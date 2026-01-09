@@ -132,12 +132,21 @@ function capitalizeTitles(earthquakes) {
 function getUserFilters() {
   const filterBtn = document.getElementById('filters');
   filterBtn.addEventListener('click', () => {
-    const popup = document.getElementById('filter__popup');
-    popup.showModal()
+    const popup = document.getElementById('searchPopup');
+    popup.showModal();
+    closeSearchPopup();
     document.body.insertAdjacentHTML('beforeend', html)
   })
 }
+function closeSearchPopup() { 
+  const closeBtn = document.getElementById('closeSearchPopup');
+  closeBtn.addEventListener('click', () => {
+    const popup = document.getElementById('searchPopup');
+    popup.close();
+  })
+}
 getUserFilters();
+
 
 let data = [];
 data = await fetchDecadeData();

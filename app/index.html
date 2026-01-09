@@ -24,27 +24,34 @@
     </header>
     <div id="app">
       <h2>Currently Showing: </h2>
-      <dialog class='z-10 w-200 h-1/4 m-auto rounded-box shadow-sm' id="filter__popup">
-      <form>
-        <div class="flex flex-col">
-          <div class="flex justify-between p-3">
-            <label for="year" class="text-center ml-5">Year Range:</label> 
-            <button class="w-10" class="absolute flex">X</button>
-          </div>
-          <div class="flex"> 
-            <input type="text" id="firstyear" name="firstyear" placeholder='First Year' class="w-60 border border-gray-300 rounded-md p-2" />
-            <input type="text" id="lastyear" name="lastyear" placehodler='Second Year' class="2-60 border border-gray-300 rounded-md p-2" />
-          </div>
-          <label for="location">Location:</label>
-          <input type="text" id="location" name="location" />
+      <form class="flex flex-col gap-6 p-6 w-96">
+  <dialog id="searchPopup" class="rounded-lg shadow-lg p-6 w-96 m-auto">
+  <form method="dialog" class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+      <label class="text-lg font-semibold my-2">Year Range</label>
+      <button type="button" class="text-gray-500 hover:text-gray-800 font-bold text-lg" id="closeSearchPopup">×</button>
+    </div>
 
-          <label for="numberofsearches">Number of Searches:</label>
-          <input type="text" id="numberofsearches" name="numberofsearches" />
-        </div>
-        <button type="submit">Apply Filters</button>
-      </form>
+    <div class="flex gap-3">
+      <input type="text" id="firstyear" name="firstyear" placeholder="First Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="text" id="lastyear" name="lastyear" placeholder="Last Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
 
-    </dialog>
+    <div class="flex flex-col gap-1">
+      <label for="location" class="font-medium my-2">Location</label>
+      <input type="text" id="location" name="location" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="numberofsearches" class="font-medium my-2">Number of Results</label>
+      <input type="number" id="numberofsearches" name="numberofsearches" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <button type="submit" class="mt-2 bg-blue-600 text-white py-2.5 px-2.5 rounded-md hover:bg-blue-700 transition">Search</button>
+  </form>
+</dialog>
+
+
 
       <section id="cards" class="flex justify-center flex-wrap">
         
