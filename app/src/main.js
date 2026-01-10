@@ -3,8 +3,6 @@ import './style.css';
 let searchRequirements = [];
 let earthquakesToDisplay = [];
 
-//i should put my data as an array of objects
-
 async function getData(year) {
   try {
     const response = await fetch(
@@ -54,10 +52,10 @@ async function getArticleUrl(title) {
   return `${baseUrl}${formattedTitle}`;
 }
 
-async function fetchDecadeData() {
+async function fetchDataBasedOnYearRange(yearStart, yearEnd) {
   const data = [];
 
-  for (let year = 2016; year <= 2025; year++) {
+  for (let year = yearStart; year <= yearEnd; year++) {
     try {
     const yearData = await getData(year);
     data.push(yearData);
@@ -82,15 +80,12 @@ async function insertCard(earthquake) {
   const articleData = await getArticleData(earthquake);
   const container = document.getElementById('cards');
   const html = `
-          <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
+          <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm m-1">
 
   <div class="flex items-start justify-between">
     <h2 class="text-lg font-semibold leading-tight">
       ${earthquake.title}
     </h2>
-    <span class="text-sm font-mono text-base-content/60">
-      YEAR
-    </span>
   </div>
 
   <div class="my-3 h-px bg-base-300"></div>
@@ -110,13 +105,7 @@ async function insertCard(earthquake) {
       <p class="text-base-content/60">Deaths</p>
       <p class="text-lg font-semibold">~2,200</p>
     </div>
-
-    <div>
-      <p class="text-base-content/60">Location</p>
-      <p class="text-lg font-semibold">Haiti</p>
-    </div>
   </div>
-
 
   <div class="mt-4 flex justify-end">
     <a href="${earthquake.url}" class="text-sm font-medium text-primary hover:underline">
@@ -150,20 +139,25 @@ function closeSearchPopup() {
     popup.close();
   })
 }
-
-getUserFilters();
-
-let data = [];
-data = await fetchDecadeData();
-getRandomEarthquakes(20, data);
-console.log(earthquakesToDisplay);
-
-for (const earthquake of earthquakesToDisplay) {
+async function createEarthquakeObject() {
+  for (const earthquake of earthquakesToDisplay) {
   earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
-  data = data.filter(eq => eq !== earthquake)
+  data = data.filter(eq => eq !== earthquake);
   const url = await getArticleUrl(earthquake.title);
   earthquake.url = url;
+  //same process as url but for mag and depth
+  //wikipedia doesnt have a standard format for casualties so im just gonna do injured + dead
+  //i need to remove the earthquakes that dont have mag/depth/casualty data 
   console.log(earthquake)
   earthquakesToDisplay.push(getRandomEarthquakes(1, data));
   insertCard(earthquake);
 }
+}
+getUserFilters();
+
+let data = [];
+data = await fetchDataBasedOnYearRange(2015, 2024);
+getRandomEarthquakes(20, data);
+console.log(earthquakesToDisplay);
+createEarthquakeObject();
+
