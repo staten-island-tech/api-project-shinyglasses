@@ -10,20 +10,27 @@
   <body class="bg-amber-50">
     <header class="bg-green-600 text-gray-900 p-4 flex justify-between">
       <h1 class="font-bold text-white">Earthquakes</h1>
-      <button class="btn text-white" id="filters">Search</button>
-
-      <!-- <details class="dropdown">
-        <summary class="btn m-1">Themes</summary>
-          <ul class="menu dropdown-content bg-ba  se-100 rounded-box z-1 w-52 p-2 shadow-sm bg-green-300">
-            <input type="radio" name="theme" id="light" class="radio" checked="checked" />
-          <label for="light">Light</label>
-          <input type="radio" name="theme" id='dark' class="radio" />
-          <label for="dark">Dark</label>
-        </ul>
-      </details> -->
+      <button class=" text-white" id="filters">Search</button>
     </header>
     <div id="app">
-      <h2>Currently Showing: </h2>
+      <section aria-label="Earthquake Filters" class="m-auto mt-6 w-72 bg-white rounded-lg shadow-lg p-4">
+  <h2 class="text-lg font-bold mb-3">Current Filters</h2>
+  <dl class="flex flex-col gap-3">
+    <div class="flex justify-between">
+      <dt class="font-semibold text-gray-700">Number of Earthquakes:</dt>
+      <dd id="numEarthquakes" class="text-gray-900"></dd>
+    </div>
+    <div class="flex justify-between">
+      <dt class="font-semibold text-gray-700">Year Range:</dt>
+      <dd id="yearRange" class="text-gray-900"></dd>
+    </div>
+    <div class="flex justify-between">
+      <dt class="font-semibold text-gray-700">Location:</dt>
+      <dd id="locationDisplay" class="text-gray-900"></dd>
+    </div>
+  </dl>
+</section>
+
       <form class="flex flex-col gap-6 p-6 w-96">
   <dialog id="searchPopup" class="rounded-lg shadow-lg p-6 w-96 m-auto">
   <form method="dialog" class="flex flex-col gap-6">
@@ -31,7 +38,6 @@
       <label class="text-lg font-semibold my-2">Year Range</label>
       <button type="button" class="text-gray-500 hover:text-gray-800 font-bold text-lg" id="closeSearchPopup">×</button>
     </div>
-
     <div class="flex gap-3">
       <input type="text" id="firstyear" name="firstyear" placeholder="First Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
       <input type="text" id="lastyear" name="lastyear" placeholder="Last Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">

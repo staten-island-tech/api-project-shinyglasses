@@ -41,7 +41,6 @@ async function getArticleData(page) {
     }
 
     const data = await response.json();
-    console.log(data);
     return data;
     //get mag and casualty data from here
   } catch (error) {
@@ -51,8 +50,10 @@ async function getArticleData(page) {
 async function getArticleUrl(title) {
   const formattedTitle = title.replace(/ /g, "_");
   const baseUrl = 'https://en.wikipedia.org/wiki/';
+  console.log(`${baseUrl}${formattedTitle}`);
   return `${baseUrl}${formattedTitle}`;
 }
+
 async function fetchDecadeData() {
   const data = [];
 
@@ -75,18 +76,17 @@ function getRandomEarthquakes(amount, array) {
     randomEarthquakes.push(array[randomIndex]); 
     array.splice(randomIndex, 1); 
   }
-  return randomEarthquakes;
 }
 
-async function insertCard(item) {
-  const articleData = await getArticleData(item);
+async function insertCard(earthquake) {
+  const articleData = await getArticleData(earthquake);
   const container = document.getElementById('cards');
   const html = `
           <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
 
   <div class="flex items-start justify-between">
     <h2 class="text-lg font-semibold leading-tight">
-      ${item}
+      ${earthquake.title}
     </h2>
     <span class="text-sm font-mono text-base-content/60">
       YEAR
@@ -119,10 +119,7 @@ async function insertCard(item) {
 
 
   <div class="mt-4 flex justify-end">
-    <a
-      href="#"
-      class="text-sm font-medium text-primary hover:underline"
-    >
+    <a href="${earthquake.url}" class="text-sm font-medium text-primary hover:underline">
       View Article →
     </a>
   </div>
@@ -158,14 +155,15 @@ getUserFilters();
 
 let data = [];
 data = await fetchDecadeData();
-earthquakesToDisplay = getRandomEarthquakes(20, data);
+getRandomEarthquakes(20, data);
 console.log(earthquakesToDisplay);
 
-
 for (const earthquake of earthquakesToDisplay) {
-  const articleData = await getArticleData(earthquake);
   earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
   data = data.filter(eq => eq !== earthquake)
+  const url = await getArticleUrl(earthquake.title);
+  earthquake.url = url;
+  console.log(earthquake)
   earthquakesToDisplay.push(getRandomEarthquakes(1, data));
   insertCard(earthquake);
 }
