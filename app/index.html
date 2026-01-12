@@ -28,27 +28,59 @@
       </section>
 
       <form class="flex flex-col gap-6 p-6 w-96">
-      <dialog id="searchPopup" class="rounded-lg shadow-lg p-6 w-96 m-auto">
-      <form method="dialog" class="flex flex-col gap-6">
-        <div class="flex items-center justify-between">
-          <label class="text-lg font-semibold my-2">Year Range</label>
-          <button type="button" class="text-gray-500 hover:text-gray-800 font-bold text-lg" id="closeSearchPopup">×</button>
-        </div>
-        <div class="flex gap-3">
-          <input type="text" id="firstyear" name="firstyear" placeholder="First Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <input type="text" id="lastyear" name="lastyear" placeholder="Last Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div class="flex flex-col gap-1">
-          <label for="location" class="font-medium my-2">Location</label>
-          <input type="text" id="location" name="location" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-
-        <div>
-        <button type="submit" class="mt-2 bg-blue-600 text-white py-2.5 px-2.5 rounded-md hover:bg-blue-700 transition">Search</button>
-        <p class="text-sm text-gray-500 mt-5">Leave any field blank to include all results.</p>
+  <dialog id="searchPopup" class="rounded-lg shadow-lg p-6 w-96 m-auto">
+    <form method="dialog" class="flex flex-col gap-6">
+      
+      <div class="flex items-center justify-between">
+        <label class="text-lg font-semibold my-2">Search Filters</label>
+        <button type="button" class="text-gray-500 hover:text-gray-800 font-bold text-lg" id="closeSearchPopup">×</button>
       </div>
-      </form>
-      </dialog>
+
+      <div class="flex gap-3">
+        <input type="text" id="firstYear" name="firstYear" placeholder="First Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="lastYear" name="lastYear" placeholder="Last Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="location" class="font-medium my-2">Location</label>
+        <input type="text" id="location" name="location" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="depth" class="font-medium my-2">Depth</label>
+        <div class="flex gap-3">
+          <input type="text" id="minDepth" name="minDepth" placeholder="Min Depth" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="text" id="maxDepth" name="maxDepth" placeholder="Max Depth" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex gap-2 mt-1">
+          <label class="flex items-center gap-1">
+            <input type="radio" name="depthUnit" value="km" checked class="accent-blue-600">
+            km
+          </label>
+          <label class="flex items-center gap-1">
+            <input type="radio" name="depthUnit" value="mi" class="accent-blue-600">
+            mi
+          </label>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="font-medium my-2">Magnitude</label>
+        <div class="flex gap-3">
+          <input type="text" id="minMagnitude" name="minMagnitude" placeholder="Min Magnitude" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="text" id="maxMagnitude" name="maxMagnitude" placeholder="Max Magnitude" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <div>
+        <button type="submit" class="mt-5 bg-blue-600 text-white py-2.5 px-2.5 rounded-md hover:bg-blue-700 transition">Search</button>
+        <p class="text-sm text-gray-500 mt-5">Leave any section blank to include all results. For ranges, you must leave both fields blank or empty.</p>
+      </div>
+
+    </form>
+  </dialog>
+</form>
+
 
 
 
