@@ -170,10 +170,6 @@ async function insertCard(earthquake) {
       <p class="text-lg font-semibold">${depth}</p>
     </div>
 
-    <div>
-      <p class="text-base-content/60">Deaths</p>
-      <p class="text-lg font-semibold">~2,200</p>
-    </div>
   </div>
 
   <div class="mt-4 flex justify-end">
@@ -186,12 +182,6 @@ async function insertCard(earthquake) {
   //add severity and death toll? 
   container.insertAdjacentHTML('beforeend', html)
 }
-
-function capitalizeTitles(earthquakes) {
-  for (const earthquake of earthquakes) {
-    earthquake.split
-  }
-}
 function showSearchPopup() {
   const filterBtn = document.getElementById('filters');
   filterBtn.addEventListener('click', () => {
@@ -203,11 +193,24 @@ function showSearchPopup() {
 function getSearchRequirements() {
   const form = document.getElementById('searchForm'); 
 
-form.addEventListener('submit', (event) => {
-  event.preventDefault(); // prevent page refresh
-
-  const firstYear = document.getElementById('firstyear').value.trim();
-  const lastYear = document.getElementById('lastyear').value.trim();
+form.addEventListener('submit', () => {
+  /* {
+    "yearRange": {
+        "start": "23",
+        "end": "23"
+    },
+    "location": "sdds",
+    "depth": {
+        "km": null,
+        "mi": null
+    },
+    "magnitude": {
+        "min": null,
+        "max": null
+    }
+}*/
+  const firstYear = document.getElementById('firstYear').value.trim();
+  const lastYear = document.getElementById('lastYear').value.trim();
 
   const location = document.getElementById('location').value.trim();
 
@@ -217,7 +220,6 @@ form.addEventListener('submit', (event) => {
   const magnitudeMin = document.getElementById('magnitudeMin')?.value.trim();
   const magnitudeMax = document.getElementById('magnitudeMax')?.value.trim();
 
-  
   const userFilters = {
     yearRange: {
       start: firstYear || null,
@@ -236,10 +238,9 @@ form.addEventListener('submit', (event) => {
 
   console.log(userFilters);
 
-  
 });
-
 }
+getSearchRequirements();
 function closeSearchPopup() { 
   const closeBtn = document.getElementById('closeSearchPopup');
   closeBtn.addEventListener('click', () => {
@@ -258,8 +259,7 @@ async function createEarthquakeObject() {
   earthquake.magnitude = magnitude;
   const depth = getDepth(articleData);
   earthquake.depth = depth;
-  //same process as url but for mag and depth
-  //wikipedia doesnt have a standard format for casualties so im just gonna do injured + dead
+  
   //i need to remove the earthquakes that dont have mag/depth/casualty data 
   //then get code to insert all cards at once with no noticable delay
   earthquakesToDisplay.push(getRandomEarthquakes(1, data));
