@@ -89,20 +89,23 @@ function getDepth(articleData) {
         value: Number(m[1]),
         unit: m[2]
       }));
-
-      let depthMetric;   
-      let depthImperial;
+      
+      let depthMetric = 'Unavailable';   
+      let depthImperial = 'Unavailable';
 
       depths.forEach(m => {
         if (m.unit === "km") depthMetric = m.value;
         else if (m.unit === "mi") depthImperial = m.value;
       });
-      return {'km': depthMetric || 'Unavailable', 
-        'mi': depthImperial || 'Unavailable'};
+
+      return {'km': depthMetric, 
+        'mi': depthImperial };
     }
   }
-  return 'Unavailable';
+  return {'km': 'Unavailable', 
+    'mi': 'Unavailable' };
 }
+
 async function getArticleUrl(title) {
   const formattedTitle = title.replace(/ /g, "_");
   const baseUrl = 'https://en.wikipedia.org/wiki/';
@@ -131,6 +134,9 @@ function getRandomEarthquakes(amount, array) {
   }
 }
 function formatDepth(depthObj) {
+  // i couldve formatted the object from getDepth as strings in this format in the getDepth function
+  //but i put it here bc its easier to use the data in search/filtering later on 
+  // if its in earthquake objs have depth in object form
   const { km, mi } = depthObj;
 
   if (km === 'Unavailable' && mi === 'Unavailable') return 'Unavailable';
@@ -141,7 +147,7 @@ function formatDepth(depthObj) {
 
 async function insertCard(earthquake) {
   const container = document.getElementById('cards');
-  const depth = formatDepth(earthquake.depth);
+  const depth = formatDepth(earthquake.depth || {});
 
   const html = `
           <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm m-1">
@@ -212,8 +218,8 @@ async function createEarthquakeObject() {
   console.log(articleData);
   const magnitude = getMagnitude(articleData);
   earthquake.magnitude = magnitude;
-  const depths = getDepth(articleData);
-  earthquake.depth = depths;
+  const depth = getDepth(articleData);
+  earthquake.depth = depth;
   console.log(earthquake)
   //same process as url but for mag and depth
   //wikipedia doesnt have a standard format for casualties so im just gonna do injured + dead
