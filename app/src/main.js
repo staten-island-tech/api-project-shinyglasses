@@ -140,14 +140,6 @@ async function fetchDataBasedOnYearRange(yearStart, yearEnd) {
   }
   return data.flat();
 }
-function getRandomEarthquakes(amount, array) { 
-  let randomEarthquakes = [];
-  for (let i = 0; i < amount; i++) {
-    const randomIndex = Math.floor(Math.random() * array.length);
-    randomEarthquakes.push(array[randomIndex]); 
-    array.splice(randomIndex, 1); 
-  }
-}
 function formatDepth(depthObj) {
   // i couldve formatted the object from getDepth as strings in this format in the getDepth function
   //but i put it here bc its easier to use the data in search/filtering later on 
@@ -294,7 +286,6 @@ async function createEarthquakeObject() {
   
   //i need to remove the earthquakes that dont have mag/depth/casualty data 
   //then get code to insert all cards at once with no noticable delay
-  earthquakesToDisplay.push(getRandomEarthquakes(1, data));
   insertCard(earthquake);
 }
 }
@@ -302,7 +293,7 @@ async function createEarthquakeObject() {
 showSearchPopup();
 let data = [];
 data = await fetchDataBasedOnYearRange(2024, 2025);
-getRandomEarthquakes(20, data);
+earthquakesToDisplay.push(...data);
 getSearchRequirements();
 createEarthquakeObject();
 
