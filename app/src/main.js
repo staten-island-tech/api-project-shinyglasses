@@ -59,15 +59,12 @@ function getMagnitude(articleData) {
       // \d+ looks for one or more digits
       // (\.\d+)? looks for an optional decimal point followed by one or more digits,
       // g looks for all matches not js the first 
-      console.log(matches);
       matches = matches.filter(m => !/^0{2,}\d+/.test(m));
       //in each match array, there kept being something like 0000009 or 0000002
       //prob wikipedia formatting. i removed leading zeros over 1 digit to fix this
       matches = matches.map(Number).filter(match => match >= 0 && match <= 10);
       //removes impossible magnitudes like 2019 that appeared 
 
-      console.log(matches);
-      console.log(Math.max(...matches.map(Number)))
       return Math.max(...matches.map(Number));
       //picks the highest number if multiple are found
       //not a foolproof method but should work for most cases
@@ -75,15 +72,42 @@ function getMagnitude(articleData) {
   }
   return 'Unavailable';
 }
+function getDepth(articleData) {
+  const htmlString = articleData.parse.text['*'];
+  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
 
+  const rows = doc.querySelectorAll('tr');
 
+  for (const row of rows) {
+    const label = row.querySelector('.infobox-label');
+    if (label && label.textContent.trim().toLowerCase().includes('depth')) {
+      const text = row.querySelector('.infobox-data').textContent;
 
+      let matches = [...text.matchAll(/(\d+(?:\.\d+)?)\s*(km|mi)\b/gi)];
+      //looks for numbers followed by either km or mi
+      const depths = matches.map(m => ({
+        value: Number(m[1]),
+        unit: m[2]
+      }));
+
+      let depthMetric;   
+      let depthImperial;
+
+      depths.forEach(m => {
+        if (m.unit === "km") depthMetric = m.value;
+        else if (m.unit === "mi") depthImperial = m.value;
+      });
+      return {'km': depthMetric || 'Unavailable', 
+        'mi': depthImperial || 'Unavailable'};
+    }
+  }
+  return 'Unavailable';
+}
 async function getArticleUrl(title) {
   const formattedTitle = title.replace(/ /g, "_");
   const baseUrl = 'https://en.wikipedia.org/wiki/';
   return `${baseUrl}${formattedTitle}`;
 }
-
 async function fetchDataBasedOnYearRange(yearStart, yearEnd) {
   const data = [];
 
@@ -98,7 +122,6 @@ async function fetchDataBasedOnYearRange(yearStart, yearEnd) {
   }
   return data.flat();
 }
-
 function getRandomEarthquakes(amount, array) { 
   let randomEarthquakes = [];
   for (let i = 0; i < amount; i++) {
@@ -107,12 +130,19 @@ function getRandomEarthquakes(amount, array) {
     array.splice(randomIndex, 1); 
   }
 }
+function formatDepth(depthObj) {
+  const { km, mi } = depthObj;
+
+  if (km === 'Unavailable' && mi === 'Unavailable') return 'Unavailable';
+  if (km !== 'Unavailable' && mi === 'Unavailable') return `${km} km`;
+  if (mi !== 'Unavailable' && km === 'Unavailable') return `${mi} mi`;
+  return `${mi} mi (${km} km)`;
+}
 
 async function insertCard(earthquake) {
-  const articleData = await getArticleData(earthquake.title);
-  console.log(articleData);
-  const magnitude = getMagnitude(articleData);
   const container = document.getElementById('cards');
+  const depth = formatDepth(earthquake.depth);
+
   const html = `
           <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm m-1">
 
@@ -127,12 +157,11 @@ async function insertCard(earthquake) {
   <div class="grid grid-cols-2 gap-4 text-sm">
     <div>
       <p class="text-base-content/60">Magnitude</p>
-      <p class="text-lg font-semibold">${magnitude}</p>
+      <p class="text-lg font-semibold">${earthquake.magnitude}</p>
     </div>
-
     <div>
       <p class="text-base-content/60">Depth</p>
-      <p class="text-lg font-semibold">10 km</p>
+      <p class="text-lg font-semibold">${depth}</p>
     </div>
 
     <div>
@@ -179,6 +208,13 @@ async function createEarthquakeObject() {
   data = data.filter(eq => eq !== earthquake);
   const url = await getArticleUrl(earthquake.title);
   earthquake.url = url;
+  const articleData = await getArticleData(earthquake.title);
+  console.log(articleData);
+  const magnitude = getMagnitude(articleData);
+  earthquake.magnitude = magnitude;
+  const depths = getDepth(articleData);
+  earthquake.depth = depths;
+  console.log(earthquake)
   //same process as url but for mag and depth
   //wikipedia doesnt have a standard format for casualties so im just gonna do injured + dead
   //i need to remove the earthquakes that dont have mag/depth/casualty data 
