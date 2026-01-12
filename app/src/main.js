@@ -192,14 +192,53 @@ function capitalizeTitles(earthquakes) {
     earthquake.split
   }
 }
-function getUserFilters() {
+function showSearchPopup() {
   const filterBtn = document.getElementById('filters');
   filterBtn.addEventListener('click', () => {
     const popup = document.getElementById('searchPopup');
     popup.showModal();
     closeSearchPopup();
-    document.body.insertAdjacentHTML('beforeend', html)
   })
+}
+function getSearchRequirements() {
+  const form = document.getElementById('searchForm'); 
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault(); // prevent page refresh
+
+  const firstYear = document.getElementById('firstyear').value.trim();
+  const lastYear = document.getElementById('lastyear').value.trim();
+
+  const location = document.getElementById('location').value.trim();
+
+  const depthKm = document.getElementById('depthKm')?.value.trim();
+  const depthMi = document.getElementById('depthMi')?.value.trim();
+
+  const magnitudeMin = document.getElementById('magnitudeMin')?.value.trim();
+  const magnitudeMax = document.getElementById('magnitudeMax')?.value.trim();
+
+  
+  const userFilters = {
+    yearRange: {
+      start: firstYear || null,
+      end: lastYear || null,
+    },
+    location: location || null,
+    depth: {
+      km: depthKm || null,
+      mi: depthMi || null,
+    },
+    magnitude: {
+      min: magnitudeMin || null,
+      max: magnitudeMax || null,
+    },
+  };
+
+  console.log(userFilters);
+
+  
+});
+
 }
 function closeSearchPopup() { 
   const closeBtn = document.getElementById('closeSearchPopup');
@@ -215,12 +254,10 @@ async function createEarthquakeObject() {
   const url = await getArticleUrl(earthquake.title);
   earthquake.url = url;
   const articleData = await getArticleData(earthquake.title);
-  console.log(articleData);
   const magnitude = getMagnitude(articleData);
   earthquake.magnitude = magnitude;
   const depth = getDepth(articleData);
   earthquake.depth = depth;
-  console.log(earthquake)
   //same process as url but for mag and depth
   //wikipedia doesnt have a standard format for casualties so im just gonna do injured + dead
   //i need to remove the earthquakes that dont have mag/depth/casualty data 
@@ -230,7 +267,7 @@ async function createEarthquakeObject() {
 }
 }
 
-getUserFilters();
+showSearchPopup();
 
 let data = [];
 data = await fetchDataBasedOnYearRange(2015, 2024);
