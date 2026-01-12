@@ -44,10 +44,10 @@ async function getData(year) {
     return [];
   }
 }
-async function getArticleData(page) {
+async function getArticleData(title) {
   try {
     const response = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=parse&page=${page}&format=json&origin=*`,
+      `https://en.wikipedia.org/w/api.php?action=parse&page=${title}&format=json&origin=*`,
     );
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -82,8 +82,8 @@ function getMagnitude(articleData) {
       //removes impossible magnitudes like 2019 that appeared 
 
       return Math.max(...matches.map(Number));
-      //picks the highest number if multiple are found
-      //not a foolproof method but should work for most cases
+      //picks the highest number if multiple afound
+      //not a foolproof method but should work for most casesre 
     }
   }
   return 'Unavailable';
@@ -121,24 +121,37 @@ function getDepth(articleData) {
   return {'km': 'Unavailable', 
     'mi': 'Unavailable' };
 }
+function getLocation(title) {
+  // not 100% accurate bc the title doesnt always have the location
+  //but its the best approximation i can do 
+  //since there isnt a location infobox like there is for depth and magnitude 
+  //i could do something like get an ai to 
+  // scan the body of the page for the location but that's frankly
+  //outside the scope of this project
+
+  const location = title.replace(/\b\d+\b|\bearthquake\b|\bearthquakes\b|\beruption\b|\beruptions\b|/gi, '').trim();
+  //removes nums and the words earthquake, earthquakes, eruption and eruptions
+  console.log(location)
+  return location
+}
 async function getArticleUrl(title) {
   const formattedTitle = title.replace(/ /g, "_");
   const baseUrl = 'https://en.wikipedia.org/wiki/';
   return `${baseUrl}${formattedTitle}`;
 }
-async function fetchDataBasedOnYearRange(yearStart, yearEnd) {
-  const data = [];
+async function fetchTitlesBasedOnYearRange(yearStart, yearEnd) {
+  const titles = [];
 
   for (let year = yearStart; year <= yearEnd; year++) {
     try {
     const yearData = await getData(year);
-    data.push(yearData);
+    titles.push(yearData);
     
   } catch (err) {
     console.error("Failed for year:", year, err);
   }
   }
-  return data.flat();
+  return titles;
 }
 function formatDepth(depthObj) {
   // i couldve formatted the object from getDepth as strings in this format in the getDepth function
@@ -213,7 +226,7 @@ form.addEventListener('submit', () => {
     //but tbh i think its overkill for this project
   }
 
-  let location = document.getElementById('location').value.trim();
+  let location = document.getElementById('location').value.toLowerCase().trim();
   if (!location) {location = 'all'}
   
   const selectedUnit = document.querySelector('input[name="depthUnit"]:checked').value;
@@ -261,10 +274,38 @@ form.addEventListener('submit', () => {
 });
 }
 async function applyFilters() {
-let data = await fetchDataBasedOnYearRange(userFilters.yearRange.start, userFilters.yearRange.end);
-console.log(data);
+  
+  let titles = await fetchTitlesBasedOnYearRange(userFilters.yearRange.start, userFilters.yearRange.end);
+  console.log(titles);
+
+  let validTitles = titles.filter(async title => {
+    const url = await getArticleUrl(title);
+    const articleData = await getArticleData(title);
+    const depth = getDepth(articleData);
+    const magnitude = getMagnitude(articleData);
+    const location = getLocation(title);
+    
+    if (userFilters.unit === 'km') {
+      if (depth.km === 'Unavailable') return false
+      else if (depth.km > userFilters.depth.max || depth.km < userFilters.depth.min) return false
+    }
+    else if (userFilters.unit === 'mi') {
+      if (depth.mi === 'Unavailable') return false
+      else if (depth.mi > userFilters.depth.max || depth.mi < userFilters.depth.min) return false  
+    } 
+    
+    if (userFilters.magnitude.max < magnitude || userFilters.magnitude.min > magnitude) return false;
+    if (location.toLowerCase() !== userFilters.location) return false
+    
+    //probably create earthquake object here -> have to change the code of that func to obj not objs
+    //or maybe js push it to earthquakestodisplay???
+    return true 
+  }
+  )
+titles.forEach(title => earthquakesToDisplay.push({title: title}));
+
+console.log(earthquakesToDisplay)
 }
-applyFilters();
 function closeSearchPopup() { 
   const closeBtn = document.getElementById('closeSearchPopup');
   closeBtn.addEventListener('click', () => {
@@ -272,28 +313,30 @@ function closeSearchPopup() {
     popup.close();
   })
 }
-async function createEarthquakeObject() {
-  for (const earthquake of earthquakesToDisplay) {
-  earthquakesToDisplay = earthquakesToDisplay.filter(eq => eq !== earthquake);
-  data = data.filter(eq => eq !== earthquake);
-  const url = await getArticleUrl(earthquake.title);
-  earthquake.url = url;
-  const articleData = await getArticleData(earthquake.title);
-  const magnitude = getMagnitude(articleData);
-  earthquake.magnitude = magnitude;
-  const depth = getDepth(articleData);
-  earthquake.depth = depth;
-  
-  //i need to remove the earthquakes that dont have mag/depth/casualty data 
-  //then get code to insert all cards at once with no noticable delay
-  insertCard(earthquake);
-}
+async function createEarthquakeObjects() {
+  const validEarthquakes = earthquakesToDisplay.filter(
+    eq => eq && !Array.isArray(eq) && typeof eq.title === 'string'
+  );
+
+  for (const earthquake of validEarthquakes) {
+    const url = await getArticleUrl(earthquake.title);
+    earthquake.url = url;
+
+    const articleData = await getArticleData(earthquake.title);
+    earthquake.magnitude = getMagnitude(articleData);
+    earthquake.depth = getDepth(articleData);
+  }
+
+  const container = document.getElementById('cards');
+  container.innerHTML = '';
+  console.log(validEarthquakes)
+  for (const earthquake of validEarthquakes) {
+    insertCard(earthquake);
+  }
 }
 
 showSearchPopup();
-let data = [];
-data = await fetchDataBasedOnYearRange(2024, 2025);
-earthquakesToDisplay.push(...data);
 getSearchRequirements();
-createEarthquakeObject();
+await applyFilters();
+await createEarthquakeObjects();
 
