@@ -17,10 +17,6 @@
         <h2 class="text-lg font-bold mb-3">Current Filters</h2>
         <dl class="flex flex-col gap-3">
           <div class="flex justify-between">
-            <dt class="font-semibold text-gray-700">Number of Earthquakes:</dt>
-            <dd id="numEarthquakes" class="text-gray-900"></dd>
-          </div>
-          <div class="flex justify-between">
             <dt class="font-semibold text-gray-700">Year Range:</dt>
             <dd id="yearRange" class="text-gray-900"></dd>
           </div>
@@ -33,28 +29,28 @@
 
       <form class="flex flex-col gap-6 p-6 w-96">
       <dialog id="searchPopup" class="rounded-lg shadow-lg p-6 w-96 m-auto">
-        <form method="dialog" class="flex flex-col gap-6">
-          <div class="flex items-center justify-between">
-            <label class="text-lg font-semibold my-2">Year Range</label>
-            <button type="button" class="text-gray-500 hover:text-gray-800 font-bold text-lg" id="closeSearchPopup">×</button>
-          </div>
-          <div class="flex gap-3">
-            <input type="text" id="firstyear" name="firstyear" placeholder="First Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="text" id="lastyear" name="lastyear" placeholder="Last Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
+      <form method="dialog" class="flex flex-col gap-6">
+        <div class="flex items-center justify-between">
+          <label class="text-lg font-semibold my-2">Year Range</label>
+          <button type="button" class="text-gray-500 hover:text-gray-800 font-bold text-lg" id="closeSearchPopup">×</button>
+        </div>
+        <div class="flex gap-3">
+          <input type="text" id="firstyear" name="firstyear" placeholder="First Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="text" id="lastyear" name="lastyear" placeholder="Last Year" class="w-1/2 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="location" class="font-medium my-2">Location</label>
+          <input type="text" id="location" name="location" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
 
-          <div class="flex flex-col gap-1">
-            <label for="location" class="font-medium my-2">Location</label>
-            <input type="text" id="location" name="location" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <label for="numberofsearches" class="font-medium my-2">Number of Results</label>
-            <input type="number" id="numberofsearches" name="numberofsearches" class="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <button type="submit" class="mt-2 bg-blue-600 text-white py-2.5 px-2.5 rounded-md hover:bg-blue-700 transition">Search</button>
-        </form>
+        <div>
+        <button type="submit" class="mt-2 bg-blue-600 text-white py-2.5 px-2.5 rounded-md hover:bg-blue-700 transition">Search</button>
+        <p class="text-sm text-gray-500 mt-5">Leave any field blank to include all results.</p>
+      </div>
+      </form>
       </dialog>
+
+
 
       <section id="cards" class="flex justify-center flex-wrap">
         

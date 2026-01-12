@@ -21,7 +21,6 @@ async function getData(year) {
     titles.forEach(title => {
       earthquakesToDisplay.push({'title': title})
     });
-    console.log(earthquakesToDisplay)
     return titles;
 
   } catch (error) {
@@ -45,10 +44,43 @@ async function getArticleData(page) {
     console.error("Error fetching data:", error);
   }
 }
+function getMagnitude(articleData) {
+  const htmlString = articleData.parse.text['*'];
+  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+
+  const rows = doc.querySelectorAll('tr');
+
+  for (const row of rows) {
+    const label = row.querySelector('.infobox-label');
+    if (label && label.textContent.trim().toLowerCase().includes('magnitude')) {
+      const text = row.querySelector('.infobox-data').textContent;
+
+      let matches = text.match(/\d+(\.\d+)?/g); 
+      // \d+ looks for one or more digits
+      // (\.\d+)? looks for an optional decimal point followed by one or more digits,
+      // g looks for all matches not js the first 
+      console.log(matches);
+      matches = matches.filter(m => !/^0{2,}\d+/.test(m));
+      //in each match array, there kept being something like 0000009 or 0000002
+      //prob wikipedia formatting. i removed leading zeros over 1 digit to fix this
+      matches = matches.map(Number).filter(match => match >= 0 && match <= 10);
+      //removes impossible magnitudes like 2019 that appeared 
+
+      console.log(matches);
+      console.log(Math.max(...matches.map(Number)))
+      return Math.max(...matches.map(Number));
+      //picks the highest number if multiple are found
+      //not a foolproof method but should work for most cases
+    }
+  }
+  return 'Unavailable';
+}
+
+
+
 async function getArticleUrl(title) {
   const formattedTitle = title.replace(/ /g, "_");
   const baseUrl = 'https://en.wikipedia.org/wiki/';
-  console.log(`${baseUrl}${formattedTitle}`);
   return `${baseUrl}${formattedTitle}`;
 }
 
@@ -77,7 +109,9 @@ function getRandomEarthquakes(amount, array) {
 }
 
 async function insertCard(earthquake) {
-  const articleData = await getArticleData(earthquake);
+  const articleData = await getArticleData(earthquake.title);
+  console.log(articleData);
+  const magnitude = getMagnitude(articleData);
   const container = document.getElementById('cards');
   const html = `
           <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm m-1">
@@ -93,7 +127,7 @@ async function insertCard(earthquake) {
   <div class="grid grid-cols-2 gap-4 text-sm">
     <div>
       <p class="text-base-content/60">Magnitude</p>
-      <p class="text-lg font-semibold">7.2</p>
+      <p class="text-lg font-semibold">${magnitude}</p>
     </div>
 
     <div>
@@ -148,16 +182,16 @@ async function createEarthquakeObject() {
   //same process as url but for mag and depth
   //wikipedia doesnt have a standard format for casualties so im just gonna do injured + dead
   //i need to remove the earthquakes that dont have mag/depth/casualty data 
-  console.log(earthquake)
+  //then get code to insert all cards at once with no noticable delay
   earthquakesToDisplay.push(getRandomEarthquakes(1, data));
   insertCard(earthquake);
 }
 }
+
 getUserFilters();
 
 let data = [];
 data = await fetchDataBasedOnYearRange(2015, 2024);
 getRandomEarthquakes(20, data);
-console.log(earthquakesToDisplay);
 createEarthquakeObject();
 
