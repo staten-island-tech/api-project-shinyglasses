@@ -1,6 +1,22 @@
 import './style.css';
 
-let searchRequirements = [];
+let userFilters = {
+    'yearRange': {
+      'start': 2024,
+      'end': 2025,
+    },
+    'location': 'all',
+    'depth': {
+      'unit': '',
+      'min': minDepth,
+      'max': maxDepth,
+    },
+    'magnitude': {
+      'min': 0,
+      'max': 10,
+    },
+  };
+
 let earthquakesToDisplay = [];
 
 async function getData(year) {
@@ -105,7 +121,6 @@ function getDepth(articleData) {
   return {'km': 'Unavailable', 
     'mi': 'Unavailable' };
 }
-
 async function getArticleUrl(title) {
   const formattedTitle = title.replace(/ /g, "_");
   const baseUrl = 'https://en.wikipedia.org/wiki/';
@@ -144,7 +159,6 @@ function formatDepth(depthObj) {
   if (mi !== 'Unavailable' && km === 'Unavailable') return `${mi} mi`;
   return `${mi} mi (${km} km)`;
 }
-
 async function insertCard(earthquake) {
   const container = document.getElementById('cards');
   const depth = formatDepth(earthquake.depth || {});
@@ -194,53 +208,71 @@ function getSearchRequirements() {
   const form = document.getElementById('searchForm'); 
 
 form.addEventListener('submit', () => {
-  /* {
-    "yearRange": {
-        "start": "23",
-        "end": "23"
-    },
-    "location": "sdds",
-    "depth": {
-        "km": null,
-        "mi": null
-    },
-    "magnitude": {
-        "min": null,
-        "max": null
-    }
-}*/
-  const firstYear = document.getElementById('firstYear').value.trim();
-  const lastYear = document.getElementById('lastYear').value.trim();
+  let firstYear = document.getElementById('firstYear').value.trim();
+  let lastYear = document.getElementById('lastYear').value.trim();
+  
+  if ((firstYear && !lastYear) || (!firstYear && lastYear)) {
+    //raise error
+  }
+  else if (!firstYear && !lastYear) {
+    firstYear = 1804; //the earliest year that can be fetched with getData
+    lastYear = 2026;
+    //if i wanna make this even better i can update the last year automatically
+    //but tbh i think its overkill for this project
+  }
 
-  const location = document.getElementById('location').value.trim();
+  let location = document.getElementById('location').value.trim();
+  if (!location) {location = 'all'}
+  
+  const selectedUnit = document.querySelector('input[name="depthUnit"]:checked').value;
 
-  const depthKm = document.getElementById('depthKm')?.value.trim();
-  const depthMi = document.getElementById('depthMi')?.value.trim();
+  let minDepth = document.getElementById('minDepth')?.value?.trim() || null;
+  let maxDepth = document.getElementById('maxDepth')?.value?.trim() || null;
+  if ((minDepth && !maxDepth) || (!minDepth && maxDepth))  {
+    //raise error 
+  } else if (!minDepth && !maxDepth) {
+    minDepth = 'lowest';
+    maxDepth = 'highest';
+    //its not worth the effort to figure out the actual lowest/highest depths from all data
+    //ill js check if the minDepth is 'lowest' or maxDepth is 'highest' when filtering later on
+    //and use that to know not to filter by depth
+    //is there a better way? probably but this method should work
+  }
 
-  const magnitudeMin = document.getElementById('magnitudeMin')?.value.trim();
-  const magnitudeMax = document.getElementById('magnitudeMax')?.value.trim();
+  let magnitudeMin = document.getElementById('magnitudeMin')?.value.trim();
+  let magnitudeMax = document.getElementById('magnitudeMax')?.value.trim();
+  if ((magnitudeMin && !magnitudeMax) || (!magnitudeMin && magnitudeMax)) {
+    //raise error
+  } else if (!magnitudeMin && !magnitudeMax) {
+    magnitudeMin = 0;
+    magnitudeMax = 10;
+    //when getting mag data i filtered out mag not in from 0-10 
+    // so these are the min and max 
+  }
 
-  const userFilters = {
+  userFilters = {
     yearRange: {
-      start: firstYear || null,
-      end: lastYear || null,
+      'start': firstYear,
+      'end': lastYear,
     },
-    location: location || null,
+    location: location,
     depth: {
-      km: depthKm || null,
-      mi: depthMi || null,
+      'unit': selectedUnit,
+      'min': minDepth,
+      'max': maxDepth,
     },
     magnitude: {
-      min: magnitudeMin || null,
-      max: magnitudeMax || null,
+      'min': magnitudeMin,
+      'max': magnitudeMax,
     },
   };
-
-  console.log(userFilters);
-
 });
 }
-getSearchRequirements();
+async function applyFilters() {
+let data = await fetchDataBasedOnYearRange(userFilters.yearRange.start, userFilters.yearRange.end);
+console.log(data);
+}
+applyFilters();
 function closeSearchPopup() { 
   const closeBtn = document.getElementById('closeSearchPopup');
   closeBtn.addEventListener('click', () => {
@@ -268,9 +300,9 @@ async function createEarthquakeObject() {
 }
 
 showSearchPopup();
-
 let data = [];
-data = await fetchDataBasedOnYearRange(2015, 2024);
+data = await fetchDataBasedOnYearRange(2024, 2025);
 getRandomEarthquakes(20, data);
+getSearchRequirements();
 createEarthquakeObject();
 
