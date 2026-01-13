@@ -8,14 +8,14 @@ let userFilters = {
     'location': 'all',
     'depth': {
       'unit': '',
-      'min': minDepth,
-      'max': maxDepth,
+      'min': 'lowest',
+      'max': 'highest',
     },
     'magnitude': {
       'min': 0,
       'max': 10,
     },
-  };
+  }; //default user filters
 
 let earthquakesToDisplay = [];
 
@@ -131,7 +131,6 @@ function getLocation(title) {
 
   const location = title.replace(/\b\d+\b|\bearthquake\b|\bearthquakes\b|\beruption\b|\beruptions\b|/gi, '').trim();
   //removes nums and the words earthquake, earthquakes, eruption and eruptions
-  console.log(location)
   return location
 }
 async function getArticleUrl(title) {
@@ -151,7 +150,7 @@ async function fetchTitlesBasedOnYearRange(yearStart, yearEnd) {
     console.error("Failed for year:", year, err);
   }
   }
-  return titles;
+  return titles.flat();
 }
 function formatDepth(depthObj) {
   // i couldve formatted the object from getDepth as strings in this format in the getDepth function
@@ -164,7 +163,7 @@ function formatDepth(depthObj) {
   if (mi !== 'Unavailable' && km === 'Unavailable') return `${mi} mi`;
   return `${mi} mi (${km} km)`;
 }
-async function insertCard(earthquake) {
+function insertCard(earthquake) {
   const container = document.getElementById('cards');
   const depth = formatDepth(earthquake.depth || {});
 
@@ -182,7 +181,7 @@ async function insertCard(earthquake) {
   <div class="grid grid-cols-2 gap-4 text-sm">
     <div>
       <p class="text-base-content/60">Magnitude</p>
-      <p class="text-lg font-semibold">${earthquake.magnitude}</p>
+      <p class="text-lg font-semibold">${depth}</p>
     </div>
     <div>
       <p class="text-base-content/60">Depth</p>
@@ -198,8 +197,32 @@ async function insertCard(earthquake) {
   </div>
 </div>
 `
-  //add severity and death toll? 
   container.insertAdjacentHTML('beforeend', html)
+}
+/* {
+    "yearRange": {
+        "start": "1999",
+        "end": "2000"
+    },
+    "location": "all",
+    "depth": {
+        "unit": "km",
+        "min": "lowest",
+        "max": "highest"
+    },
+    "magnitude": {
+        "min": 0,
+        "max": 10
+    }
+} */
+function insertCards() {
+  console.log(userFilters)
+  console.log(earthquakesToDisplay)
+  const container = document.getElementById('cards');
+  container.innerHTML = ''
+  for (const earthquake of earthquakesToDisplay) {
+    insertCard(earthquake);
+  }
 }
 function showSearchPopup() {
   const filterBtn = document.getElementById('filters');
@@ -209,10 +232,11 @@ function showSearchPopup() {
     closeSearchPopup();
   })
 }
-function getSearchRequirements() {
+async function getSearchRequirements() {
   const form = document.getElementById('searchForm'); 
 
-form.addEventListener('submit', () => {
+form.addEventListener('submit', async() => {
+
   let firstYear = document.getElementById('firstYear').value.trim();
   let lastYear = document.getElementById('lastYear').value.trim();
   
@@ -231,8 +255,9 @@ form.addEventListener('submit', () => {
   
   const selectedUnit = document.querySelector('input[name="depthUnit"]:checked').value;
 
-  let minDepth = document.getElementById('minDepth')?.value?.trim() || null;
-  let maxDepth = document.getElementById('maxDepth')?.value?.trim() || null;
+  let minDepth = document.getElementById('minDepth')?.value?.trim();
+  let maxDepth = document.getElementById('maxDepth')?.value?.trim();
+
   if ((minDepth && !maxDepth) || (!minDepth && maxDepth))  {
     //raise error 
   } else if (!minDepth && !maxDepth) {
@@ -254,7 +279,6 @@ form.addEventListener('submit', () => {
     //when getting mag data i filtered out mag not in from 0-10 
     // so these are the min and max 
   }
-
   userFilters = {
     yearRange: {
       'start': firstYear,
@@ -271,40 +295,39 @@ form.addEventListener('submit', () => {
       'max': magnitudeMax,
     },
   };
+  await applyFilters();
 });
 }
 async function applyFilters() {
   
   let titles = await fetchTitlesBasedOnYearRange(userFilters.yearRange.start, userFilters.yearRange.end);
-  console.log(titles);
+  earthquakesToDisplay = [];
+  console.log(earthquakesToDisplay)
+  
+  for (const title of titles) {
+    if (Array.isArray(title)) continue;
 
-  let validTitles = titles.filter(async title => {
     const url = await getArticleUrl(title);
     const articleData = await getArticleData(title);
     const depth = getDepth(articleData);
     const magnitude = getMagnitude(articleData);
     const location = getLocation(title);
-    
-    if (userFilters.unit === 'km') {
-      if (depth.km === 'Unavailable') return false
-      else if (depth.km > userFilters.depth.max || depth.km < userFilters.depth.min) return false
-    }
-    else if (userFilters.unit === 'mi') {
-      if (depth.mi === 'Unavailable') return false
-      else if (depth.mi > userFilters.depth.max || depth.mi < userFilters.depth.min) return false  
-    } 
-    
-    if (userFilters.magnitude.max < magnitude || userFilters.magnitude.min > magnitude) return false;
-    if (location.toLowerCase() !== userFilters.location) return false
-    
-    //probably create earthquake object here -> have to change the code of that func to obj not objs
-    //or maybe js push it to earthquakestodisplay???
-    return true 
-  }
-  )
-titles.forEach(title => earthquakesToDisplay.push({title: title}));
 
-console.log(earthquakesToDisplay)
+    if (userFilters.depth.unit === 'km') {
+      if (depth.km === 'Unavailable') continue;
+      if (depth.km > userFilters.depth.max || depth.km < userFilters.depth.min) continue;
+    } else if (userFilters.depth.unit === 'mi') {
+      if (depth.mi === 'Unavailable') continue;
+      if (depth.mi > userFilters.depth.max || depth.mi < userFilters.depth.min) continue;
+    }
+
+    if (magnitude > userFilters.magnitude.max || magnitude < userFilters.magnitude.min) continue;
+
+    if (userFilters.location !== 'all' && location.toLowerCase() !== userFilters.location) continue;
+    
+    createEarthquakeObject(title,location,url,depth,magnitude);
+}
+  insertCards();
 }
 function closeSearchPopup() { 
   const closeBtn = document.getElementById('closeSearchPopup');
@@ -313,8 +336,16 @@ function closeSearchPopup() {
     popup.close();
   })
 }
-async function createEarthquakeObjects() {
-  const validEarthquakes = earthquakesToDisplay.filter(
+function createEarthquakeObject(title, location, url, depth, magnitude) {
+  let earthquake = {
+    title: title,
+    location: location,
+    url: url,
+    depth: depth,
+    magnitude: magnitude
+  };
+  earthquakesToDisplay.push(earthquake);
+  /* const validEarthquakes = earthquakesToDisplay.filter(
     eq => eq && !Array.isArray(eq) && typeof eq.title === 'string'
   );
 
@@ -332,11 +363,8 @@ async function createEarthquakeObjects() {
   console.log(validEarthquakes)
   for (const earthquake of validEarthquakes) {
     insertCard(earthquake);
-  }
+  } */
 }
-
 showSearchPopup();
 getSearchRequirements();
-await applyFilters();
-await createEarthquakeObjects();
 
