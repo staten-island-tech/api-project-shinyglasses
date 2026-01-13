@@ -13,7 +13,7 @@
       <button class=" text-white" id="filters">Search</button>
     </header>
     <div id="app">
-      <section class="m-auto mt-6 w-72 bg-white rounded-lg shadow-lg p-4">
+      <section id="currentFilters" class="m-auto mt-6 w-72 bg-white rounded-lg shadow-lg p-4">
         <h2 class="text-lg font-bold mb-3">Current Filters</h2>
         <dl class="flex flex-col gap-3">
           <div class="flex justify-between">
@@ -24,6 +24,18 @@
             <dt class="font-semibold text-gray-700">Location:</dt>
             <dd id="locationDisplay" class="text-gray-900"></dd>
           </div>
+          <div class="flex justify-between">
+            <dt class="font-semibold text-gray-700">Depth Range:</dt>
+            <dd id="depthRange" class="text-gray-900"></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="font-semibold text-gray-700">Magnitude:</dt>
+            <dd id="magnitudeRange" class="text-gray-900"></dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-xs my-4 text-gray-700">Number of Results:</dt>
+            <dd id="numberOfResults" class="text-gray-900"></dd>
+          </div>  
         </dl>
       </section>
 

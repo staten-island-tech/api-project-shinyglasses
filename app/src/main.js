@@ -283,7 +283,9 @@ form.addEventListener('submit', async() => {
     },
   };
   console.log(userFilters)
+  editCurrentFilters(); 
   await applyFilters();
+  
 });
 }
 async function applyFilters() {
@@ -347,6 +349,19 @@ function createEarthquakeObject(title, location, url, depth, magnitude) {
   };
   earthquakesToDisplay.push(earthquake);    
 }
+function editCurrentFilters() {
+  document.getElementById('yearRange').textContent = `${userFilters.yearRange.start} to ${userFilters.yearRange.end}` //
+  document.getElementById('locationDisplay').textContent = userFilters.location; //need to capitalize
+  document.getElementById('depthRange').textContent = `${userFilters.depth.min} ${userFilters.depth.unit} to ${userFilters.depth.max}  ${userFilters.depth.unit}` 
+  //ned to capitalize depth range if its text
+  //also get rid of the units if its highest to lowest?? maybe by seeing if its highest to lowest and then switching the sring to 
+  //all? certainly would fit with what i did for location 
+  document.getElementById('magnitudeRange').textContent = `${userFilters.magnitude.min} to ${userFilters.magnitude.max}`
+  //num of results is gonna be annoying to do bc its gotta have a delay compared to the others bc
+  //its gotta wait for the amount of earthquakes to be fetched and filtered through
+  //maybe js dont have num of results?  
+}
 showSearchPopup();
 getSearchRequirements();
+editCurrentFilters()
 
