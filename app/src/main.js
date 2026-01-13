@@ -145,6 +145,7 @@ async function fetchTitlesBasedOnYearRange(yearStart, yearEnd) {
     try {
     const yearData = await getData(year);
     titles.push(yearData);
+    await new Promise(r => setTimeout(r, 500));
     
   } catch (err) {
     console.error("Failed for year:", year, err);
@@ -199,22 +200,6 @@ function insertCard(earthquake) {
 `
   container.insertAdjacentHTML('beforeend', html)
 }
-/* {
-    "yearRange": {
-        "start": "1999",
-        "end": "2000"
-    },
-    "location": "all",
-    "depth": {
-        "unit": "km",
-        "min": "lowest",
-        "max": "highest"
-    },
-    "magnitude": {
-        "min": 0,
-        "max": 10
-    }
-} */
 function insertCards() {
   console.log(userFilters)
   console.log(earthquakesToDisplay)
@@ -241,7 +226,7 @@ form.addEventListener('submit', async() => {
   let lastYear = document.getElementById('lastYear').value.trim();
   
   if ((firstYear && !lastYear) || (!firstYear && lastYear)) {
-    //raise error
+    showError('For ranges, you must leave both fields blank or empty.')
   }
   else if (!firstYear && !lastYear) {
     firstYear = 1804; //the earliest year that can be fetched with getData
@@ -249,7 +234,10 @@ form.addEventListener('submit', async() => {
     //if i wanna make this even better i can update the last year automatically
     //but tbh i think its overkill for this project
   }
-
+  /* to do: ADD ERROR MESSAGE FOR IF MINIMUMS EXCEED MAXIMUM*/
+  // also probably get a loading icon bc if you load all the earthquakes it takes sooo long
+  //also something to show if there are no earthquakes that meet the criteria
+  //prob can js use the message code 
   let location = document.getElementById('location').value.toLowerCase().trim();
   if (!location) {location = 'all'}
   
@@ -259,7 +247,7 @@ form.addEventListener('submit', async() => {
   let maxDepth = document.getElementById('maxDepth')?.value?.trim();
 
   if ((minDepth && !maxDepth) || (!minDepth && maxDepth))  {
-    //raise error 
+    showError('For ranges, you must leave both fields blank or empty.')
   } else if (!minDepth && !maxDepth) {
     minDepth = 'lowest';
     maxDepth = 'highest';
@@ -268,11 +256,10 @@ form.addEventListener('submit', async() => {
     //and use that to know not to filter by depth
     //is there a better way? probably but this method should work
   }
-
-  let magnitudeMin = document.getElementById('magnitudeMin')?.value.trim();
-  let magnitudeMax = document.getElementById('magnitudeMax')?.value.trim();
+  let magnitudeMin = document.getElementById('magnitudeMin')?.value?.trim;
+  let magnitudeMax = document.getElementById('magnitudeMax')?.value?.trim();
   if ((magnitudeMin && !magnitudeMax) || (!magnitudeMin && magnitudeMax)) {
-    //raise error
+    showError('For ranges, you must leave both fields blank or empty..')
   } else if (!magnitudeMin && !magnitudeMax) {
     magnitudeMin = 0;
     magnitudeMax = 10;
@@ -295,11 +282,11 @@ form.addEventListener('submit', async() => {
       'max': magnitudeMax,
     },
   };
+  console.log(userFilters)
   await applyFilters();
 });
 }
 async function applyFilters() {
-  
   let titles = await fetchTitlesBasedOnYearRange(userFilters.yearRange.start, userFilters.yearRange.end);
   earthquakesToDisplay = [];
   console.log(earthquakesToDisplay)
@@ -336,6 +323,20 @@ function closeSearchPopup() {
     popup.close();
   })
 }
+function showError(message) {
+  const popup = document.getElementById('errorPopup');
+  const messageEl = document.getElementById('errorMessage');
+  messageEl.textContent = message;
+  popup.showModal(); 
+  hideError(); 
+}
+function hideError() {
+  const closeBtn = document.getElementById('closeError');
+  closeBtn.addEventListener('click', () => {
+    const popup = document.getElementById('errorPopup');
+    popup.close();
+  })
+}
 function createEarthquakeObject(title, location, url, depth, magnitude) {
   let earthquake = {
     title: title,
@@ -344,26 +345,7 @@ function createEarthquakeObject(title, location, url, depth, magnitude) {
     depth: depth,
     magnitude: magnitude
   };
-  earthquakesToDisplay.push(earthquake);
-  /* const validEarthquakes = earthquakesToDisplay.filter(
-    eq => eq && !Array.isArray(eq) && typeof eq.title === 'string'
-  );
-
-  for (const earthquake of validEarthquakes) {
-    const url = await getArticleUrl(earthquake.title);
-    earthquake.url = url;
-
-    const articleData = await getArticleData(earthquake.title);
-    earthquake.magnitude = getMagnitude(articleData);
-    earthquake.depth = getDepth(articleData);
-  }
-
-  const container = document.getElementById('cards');
-  container.innerHTML = '';
-  console.log(validEarthquakes)
-  for (const earthquake of validEarthquakes) {
-    insertCard(earthquake);
-  } */
+  earthquakesToDisplay.push(earthquake);    
 }
 showSearchPopup();
 getSearchRequirements();
