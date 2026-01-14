@@ -5,11 +5,11 @@ let userFilters = {
       'start': 2024,
       'end': 2025,
     },
-    'location': 'all',
+    'location': 'All',
     'depth': {
       'unit': '',
-      'min': 'lowest',
-      'max': 'highest',
+      'min': 'Lowest',
+      'max': 'Highest',
     },
     'magnitude': {
       'min': 0,
@@ -239,7 +239,7 @@ form.addEventListener('submit', async() => {
   //also something to show if there are no earthquakes that meet the criteria
   //prob can js use the message code 
   let location = document.getElementById('location').value.toLowerCase().trim();
-  if (!location) {location = 'all'}
+  if (!location) {location = 'All'}
   
   const selectedUnit = document.querySelector('input[name="depthUnit"]:checked').value;
 
@@ -249,8 +249,8 @@ form.addEventListener('submit', async() => {
   if ((minDepth && !maxDepth) || (!minDepth && maxDepth))  {
     showError('For ranges, you must leave both fields blank or empty.')
   } else if (!minDepth && !maxDepth) {
-    minDepth = 'lowest';
-    maxDepth = 'highest';
+    minDepth = 'Lowest';
+    maxDepth = 'Highest';
     //its not worth the effort to figure out the actual lowest/highest depths from all data
     //ill js check if the minDepth is 'lowest' or maxDepth is 'highest' when filtering later on
     //and use that to know not to filter by depth
@@ -312,7 +312,7 @@ async function applyFilters() {
 
     if (magnitude > userFilters.magnitude.max || magnitude < userFilters.magnitude.min) continue;
 
-    if (userFilters.location !== 'all' && location.toLowerCase() !== userFilters.location) continue;
+    if (userFilters.location !== 'All' && location.toLowerCase() !== userFilters.location) continue;
     
     createEarthquakeObject(title,location,url,depth,magnitude);
 }
@@ -352,10 +352,12 @@ function createEarthquakeObject(title, location, url, depth, magnitude) {
 function editCurrentFilters() {
   document.getElementById('yearRange').textContent = `${userFilters.yearRange.start} to ${userFilters.yearRange.end}` //
   document.getElementById('locationDisplay').textContent = userFilters.location; //need to capitalize
-  document.getElementById('depthRange').textContent = `${userFilters.depth.min} ${userFilters.depth.unit} to ${userFilters.depth.max}  ${userFilters.depth.unit}` 
-  //ned to capitalize depth range if its text
-  //also get rid of the units if its highest to lowest?? maybe by seeing if its highest to lowest and then switching the sring to 
-  //all? certainly would fit with what i did for location 
+
+  let depthString =  `${userFilters.depth.min} ${userFilters.depth.unit} to ${userFilters.depth.max}  ${userFilters.depth.unit}` 
+  if (userFilters.depth.min === 'lowest' && userFilters.depth.max === 'highest') {
+    depthString = `${userFilters.depth.min} to ${userFilters.depth.max} ` 
+  } 
+  document.getElementById('depthRange').textContent = depthString
   document.getElementById('magnitudeRange').textContent = `${userFilters.magnitude.min} to ${userFilters.magnitude.max}`
   //num of results is gonna be annoying to do bc its gotta have a delay compared to the others bc
   //its gotta wait for the amount of earthquakes to be fetched and filtered through
