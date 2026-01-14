@@ -179,7 +179,7 @@ function insertCards() {
         <div class="mt-4 flex justify-end">
           <a href="${eq.url}" target="_blank"
              class="text-sm font-medium text-primary hover:underline">
-            View Article →
+            View Article/Wikipedia Section →
           </a>
         </div>
       </div>
