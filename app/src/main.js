@@ -359,9 +359,7 @@ function editCurrentFilters() {
   } 
   document.getElementById('depthRange').textContent = depthString
   document.getElementById('magnitudeRange').textContent = `${userFilters.magnitude.min} to ${userFilters.magnitude.max}`
-  //num of results is gonna be annoying to do bc its gotta have a delay compared to the others bc
-  //its gotta wait for the amount of earthquakes to be fetched and filtered through
-  //maybe js dont have num of results?  
+  
 }
 showSearchPopup();
 getSearchRequirements();
