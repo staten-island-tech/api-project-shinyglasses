@@ -217,55 +217,76 @@ function showSearchPopup() {
     closeSearchPopup();
   })
 }
-async function getSearchRequirements() {
-  const form = document.getElementById('searchForm'); 
-
-form.addEventListener('submit', async() => {
-
-  let firstYear = document.getElementById('firstYear').value.trim();
-  let lastYear = document.getElementById('lastYear').value.trim();
-  
-  if ((firstYear && !lastYear) || (!firstYear && lastYear)) {
-    showError('For ranges, you must leave both fields blank or empty.')
+function formRangeErrorHandling(firstValue, lastValue) {
+  let updateCurrentFilters = true;
+  if ((firstValue && !lastValue) || (!firstValue && lastValue)) {
+    showError('For ranges, you must leave both fields blank or empty.');
+    updateCurrentFilters = false;
   }
-  else if (!firstYear && !lastYear) {
+  else if (!firstValue && !lastValue) {
     firstYear = 1804; //the earliest year that can be fetched with getData
     lastYear = 2026;
     //if i wanna make this even better i can update the last year automatically
     //but tbh i think its overkill for this project
+  } else if (typeof firstValue === 'number' && typeof lastValue === 'number' && firstValue > lastValue) {
+    showError("Your max values can't be smaller than your min values");
+    console.log(firstValue, lastValue)
+    updateCurrentFilters = false;
+  } else if (firstValue < 0 || lastValue < 0) {
+    showError("You can't have any negative values");
   }
-  /* to do: ADD ERROR MESSAGE FOR IF MINIMUMS EXCEED MAXIMUM*/
+  return updateCurrentFilters
+}
+async function getSearchRequirements() {
+  const form = document.getElementById('searchForm'); 
+form.addEventListener('submit', async() => {
+  let updateCurrentFilters = true;
+  let firstYear = document.getElementById('firstYear').value.trim();
+  let lastYear = document.getElementById('lastYear').value.trim();
+  
+  if (!firstYear && !lastYear) {
+    firstYear = 1804; //the earliest year that can be fetched with getData
+    lastYear = 2026;
+    //if i wanna make this even better i can update the last year automatically
+    //but tbh i think its overkill for this project
+  } 
+  formRangeErrorHandling(firstYear, lastYear)
+  // to do: 
   // also probably get a loading icon bc if you load all the earthquakes it takes sooo long
   //also something to show if there are no earthquakes that meet the criteria
   //prob can js use the message code 
   let location = document.getElementById('location').value.toLowerCase().trim();
   if (!location) {location = 'All'}
+  if (/\d/.test(location)) {
+    //sees if it has numbers
+    showError("Numbers aren't allowed in locations")
+  }
   
   const selectedUnit = document.querySelector('input[name="depthUnit"]:checked').value;
 
   let minDepth = document.getElementById('minDepth')?.value?.trim();
   let maxDepth = document.getElementById('maxDepth')?.value?.trim();
 
-  if ((minDepth && !maxDepth) || (!minDepth && maxDepth))  {
-    showError('For ranges, you must leave both fields blank or empty.')
-  } else if (!minDepth && !maxDepth) {
+  if (!minDepth && !maxDepth) {
     minDepth = 'Lowest';
     maxDepth = 'Highest';
     //its not worth the effort to figure out the actual lowest/highest depths from all data
     //ill js check if the minDepth is 'lowest' or maxDepth is 'highest' when filtering later on
     //and use that to know not to filter by depth
     //is there a better way? probably but this method should work
-  }
+  } 
+  formRangeErrorHandling(minDepth, maxDepth)
+
   let magnitudeMin = document.getElementById('magnitudeMin')?.value?.trim;
   let magnitudeMax = document.getElementById('magnitudeMax')?.value?.trim();
-  if ((magnitudeMin && !magnitudeMax) || (!magnitudeMin && magnitudeMax)) {
-    showError('For ranges, you must leave both fields blank or empty..')
-  } else if (!magnitudeMin && !magnitudeMax) {
-    magnitudeMin = 0;
-    magnitudeMax = 10;
-    //when getting mag data i filtered out mag not in from 0-10 
-    // so these are the min and max 
-  }
+  if (!magnitudeMin && !magnitudeMax) {
+    magnitudeMin = 'Lowest';
+    magnitudeMax = 'Highest';
+    //lowest is 0
+    //highest is 10 
+  } 
+  formRangeErrorHandling(magnitudeMin, magnitudeMax)
+
   userFilters = {
     yearRange: {
       'start': firstYear,
@@ -283,9 +304,10 @@ form.addEventListener('submit', async() => {
     },
   };
   console.log(userFilters)
-  editCurrentFilters(); 
-  await applyFilters();
-  
+  if (updateCurrentFilters) {
+    editCurrentFilters(); 
+    await applyFilters();
+  }
 });
 }
 async function applyFilters() {
@@ -354,7 +376,7 @@ function editCurrentFilters() {
   document.getElementById('locationDisplay').textContent = userFilters.location; //need to capitalize
 
   let depthString =  `${userFilters.depth.min} ${userFilters.depth.unit} to ${userFilters.depth.max}  ${userFilters.depth.unit}` 
-  if (userFilters.depth.min === 'lowest' && userFilters.depth.max === 'highest') {
+  if (userFilters.depth.min === 'Lowest' && userFilters.depth.max === 'Highest') {
     depthString = `${userFilters.depth.min} to ${userFilters.depth.max} ` 
   } 
   document.getElementById('depthRange').textContent = depthString
