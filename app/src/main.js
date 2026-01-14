@@ -296,6 +296,7 @@ form.addEventListener('submit', async() => {
 async function applyFilters() {
   console.time('applyFilters');
   console.log('loading')
+  showLoading();
 
   const titles = await fetchTitlesBasedOnYearRange(
     userFilters.yearRange.start,
@@ -355,6 +356,7 @@ async function applyFilters() {
   }
 
   insertCards();
+  hideLoading();
 
   console.timeEnd('applyFilters');
 }
@@ -392,6 +394,13 @@ function editCurrentFilters() {
   document.getElementById('depthRange').textContent = depthString
   document.getElementById('magnitudeRange').textContent = `${userFilters.magnitude.min} to ${userFilters.magnitude.max}`
   
+}
+function showLoading() {
+  document.getElementById('loading').classList.remove('hidden');
+}
+
+function hideLoading() {
+  document.getElementById('loading').classList.add('hidden');
 }
 showSearchPopup();
 getSearchRequirements();
