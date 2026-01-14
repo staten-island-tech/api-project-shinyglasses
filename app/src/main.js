@@ -60,67 +60,51 @@ async function getArticleData(title) {
     console.error("Error fetching data:", error);
   }
 }
-function getMagnitude(articleData) {
+function getMagnitudeAndDepth(articleData) {
   const htmlString = articleData.parse.text['*'];
   const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-
-  const rows = doc.querySelectorAll('tr');
-
-  for (const row of rows) {
+  
+  let magnitude = 'Unavailable';
+  let depth = { km: 'Unavailable', mi: 'Unavailable' };
+  
+  doc.querySelectorAll('tr').forEach(row => {
     const label = row.querySelector('.infobox-label');
-    if (label && label.textContent.trim().toLowerCase().includes('magnitude')) {
-      const text = row.querySelector('.infobox-data').textContent;
-
-      let matches = text.match(/\d+(\.\d+)?/g); 
+    const data = row.querySelector('.infobox-data')?.textContent || '';
+    if (!label) return;
+    
+    const text = label.textContent.trim().toLowerCase();
+    
+    // Magnitude
+    if (text.includes('magnitude')) {
+      let matches = data.match(/\d+(\.\d+)?/g) || [];
       // \d+ looks for one or more digits
       // (\.\d+)? looks for an optional decimal point followed by one or more digits,
       // g looks for all matches not js the first 
       matches = matches.filter(m => !/^0{2,}\d+/.test(m));
       //in each match array, there kept being something like 0000009 or 0000002
       //prob wikipedia formatting. i removed leading zeros over 1 digit to fix this
-      matches = matches.map(Number).filter(match => match >= 0 && match <= 10);
+      matches = matches.map(Number).filter(n => n >= 0 && n <= 10);
       //removes impossible magnitudes like 2019 that appeared 
 
-      return Math.max(...matches.map(Number));
-      //picks the highest number if multiple afound
-      //not a foolproof method but should work for most casesre 
+      if (matches.length) magnitude = Math.max(...matches);
     }
-  }
-  return 'Unavailable';
-}
-function getDepth(articleData) {
-  const htmlString = articleData.parse.text['*'];
-  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-
-  const rows = doc.querySelectorAll('tr');
-
-  for (const row of rows) {
-    const label = row.querySelector('.infobox-label');
-    if (label && label.textContent.trim().toLowerCase().includes('depth')) {
-      const text = row.querySelector('.infobox-data').textContent;
-
-      let matches = [...text.matchAll(/(\d+(?:\.\d+)?)\s*(km|mi)\b/gi)];
+    
+    
+    if (text.includes('depth')) {
+      const matches = [...data.matchAll(/(\d+(?:\.\d+)?)\s*(km|mi)\b/gi)];
       //looks for numbers followed by either km or mi
-      const depths = matches.map(m => ({
-        value: Number(m[1]),
-        unit: m[2]
-      }));
-      
-      let depthMetric = 'Unavailable';   
-      let depthImperial = 'Unavailable';
-
-      depths.forEach(m => {
-        if (m.unit === "km") depthMetric = m.value;
-        else if (m.unit === "mi") depthImperial = m.value;
+      matches.forEach(m => {
+        if (m[2] === 'km') depth.km = Number(m[1]);
+        if (m[2] === 'mi') depth.mi = Number(m[1]);
       });
-
-      return {'km': depthMetric, 
-        'mi': depthImperial };
     }
-  }
-  return {'km': 'Unavailable', 
-    'mi': 'Unavailable' };
+  });
+  
+  return { magnitude, depth };
 }
+
+
+
 function getLocation(title) {
   // not 100% accurate bc the title doesnt always have the location
   //but its the best approximation i can do 
@@ -154,9 +138,6 @@ async function fetchTitlesBasedOnYearRange(yearStart, yearEnd) {
   return titles.flat();
 }
 function formatDepth(depthObj) {
-  // i couldve formatted the object from getDepth as strings in this format in the getDepth function
-  //but i put it here bc its easier to use the data in search/filtering later on 
-  // if its in earthquake objs have depth in object form
   const { km, mi } = depthObj;
 
   if (km === 'Unavailable' && mi === 'Unavailable') return 'Unavailable';
@@ -164,51 +145,48 @@ function formatDepth(depthObj) {
   if (mi !== 'Unavailable' && km === 'Unavailable') return `${mi} mi`;
   return `${mi} mi (${km} km)`;
 }
-function insertCard(earthquake) {
-  const container = document.getElementById('cards');
-  const depth = formatDepth(earthquake.depth || {});
 
-  const html = `
-          <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm m-1">
-
-  <div class="flex items-start justify-between">
-    <h2 class="text-lg font-semibold leading-tight">
-      ${earthquake.title}
-    </h2>
-  </div>
-
-  <div class="my-3 h-px bg-base-300"></div>
-
-  <div class="grid grid-cols-2 gap-4 text-sm">
-    <div>
-      <p class="text-base-content/60">Magnitude</p>
-      <p class="text-lg font-semibold">${depth}</p>
-    </div>
-    <div>
-      <p class="text-base-content/60">Depth</p>
-      <p class="text-lg font-semibold">${depth}</p>
-    </div>
-
-  </div>
-
-  <div class="mt-4 flex justify-end">
-    <a href="${earthquake.url}" class="text-sm font-medium text-primary hover:underline">
-      View Article →
-    </a>
-  </div>
-</div>
-`
-  container.insertAdjacentHTML('beforeend', html)
-}
 function insertCards() {
-  console.log(userFilters)
-  console.log(earthquakesToDisplay)
   const container = document.getElementById('cards');
-  container.innerHTML = ''
-  for (const earthquake of earthquakesToDisplay) {
-    insertCard(earthquake);
-  }
+  container.innerHTML = earthquakesToDisplay.map(eq => {
+    const depth = formatDepth(eq.depth);
+    
+    //differs from the usual insertAdjacentHTML method bc
+    //that method takes longer to load than this one
+    //speed is a concern because it was taking a long time to
+    //load hundreds of earthquakes
+    return `
+      <div class="w-96 rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm m-1">
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-semibold leading-tight">
+            ${eq.title}
+          </h2>
+        </div>
+
+        <div class="my-3 h-px bg-base-300"></div>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-base-content/60">Magnitude</p>
+            <p class="text-lg font-semibold">${eq.magnitude}</p>
+          </div>
+          <div>
+            <p class="text-base-content/60">Depth</p>
+            <p class="text-lg font-semibold">${depth}</p>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <a href="${eq.url}" target="_blank"
+             class="text-sm font-medium text-primary hover:underline">
+            View Article →
+          </a>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
+
 function showSearchPopup() {
   const filterBtn = document.getElementById('filters');
   filterBtn.addEventListener('click', () => {
@@ -230,7 +208,6 @@ function formRangeErrorHandling(firstValue, lastValue) {
     //but tbh i think its overkill for this project
   } else if (typeof firstValue === 'number' && typeof lastValue === 'number' && firstValue > lastValue) {
     showError("Your max values can't be smaller than your min values");
-    console.log(firstValue, lastValue)
     updateCurrentFilters = false;
   } else if (firstValue < 0 || lastValue < 0) {
     showError("You can't have any negative values");
@@ -245,12 +222,16 @@ form.addEventListener('submit', async() => {
   let lastYear = document.getElementById('lastYear').value.trim();
   
   if (!firstYear && !lastYear) {
-    firstYear = 1804; //the earliest year that can be fetched with getData
+    firstYear = 1950; 
+    //the real first year whose data can be fetched is 1804
+    //but it took 3.2 min to load all the 1k+ earthquakes if the start year is 1804
+    //1.4 min for start year=1900
+    //0.84 min for start year=1950
     lastYear = 2026;
     //if i wanna make this even better i can update the last year automatically
     //but tbh i think its overkill for this project
   } 
-  formRangeErrorHandling(firstYear, lastYear)
+  
   // to do: 
   // also probably get a loading icon bc if you load all the earthquakes it takes sooo long
   //also something to show if there are no earthquakes that meet the criteria
@@ -275,9 +256,8 @@ form.addEventListener('submit', async() => {
     //and use that to know not to filter by depth
     //is there a better way? probably but this method should work
   } 
-  formRangeErrorHandling(minDepth, maxDepth)
 
-  let magnitudeMin = document.getElementById('magnitudeMin')?.value?.trim;
+  let magnitudeMin = document.getElementById('magnitudeMin')?.value?.trim();
   let magnitudeMax = document.getElementById('magnitudeMax')?.value?.trim();
   if (!magnitudeMin && !magnitudeMax) {
     magnitudeMin = 'Lowest';
@@ -285,7 +265,10 @@ form.addEventListener('submit', async() => {
     //lowest is 0
     //highest is 10 
   } 
-  formRangeErrorHandling(magnitudeMin, magnitudeMax)
+    updateCurrentFilters =
+  formRangeErrorHandling(firstYear, lastYear) &&
+  formRangeErrorHandling(minDepth, maxDepth) &&
+  formRangeErrorHandling(magnitudeMin, magnitudeMax);
 
   userFilters = {
     yearRange: {
@@ -303,7 +286,7 @@ form.addEventListener('submit', async() => {
       'max': magnitudeMax,
     },
   };
-  console.log(userFilters)
+
   if (updateCurrentFilters) {
     editCurrentFilters(); 
     await applyFilters();
@@ -311,35 +294,71 @@ form.addEventListener('submit', async() => {
 });
 }
 async function applyFilters() {
-  let titles = await fetchTitlesBasedOnYearRange(userFilters.yearRange.start, userFilters.yearRange.end);
+  console.time('applyFilters');
+  console.log('loading')
+
+  const titles = await fetchTitlesBasedOnYearRange(
+    userFilters.yearRange.start,
+    userFilters.yearRange.end
+  );
+
+  const filteredTitles = titles.filter(title => {
+    if (!title || Array.isArray(title)) return false;
+
+    const location = getLocation(title)?.toLowerCase();
+    if (!location) return false;
+
+    if (userFilters.location !== 'All' && location !== userFilters.location.toLowerCase()) {
+      return false;
+    }
+    return true;
+  });
+
+  const results = await Promise.all(
+    filteredTitles.map(async title => {
+      try {
+        const articleData = await getArticleData(title);
+        const {magnitude, depth} = getMagnitudeAndDepth(articleData)
+        const location = getLocation(title);
+        const url = await getArticleUrl(title);
+
+        return { title, location, url, depth, magnitude };
+      } catch {
+        return null;
+      }
+    })
+  );
+  console.log(results)
   earthquakesToDisplay = [];
-  console.log(earthquakesToDisplay)
-  
-  for (const title of titles) {
-    if (Array.isArray(title)) continue;
 
-    const url = await getArticleUrl(title);
-    const articleData = await getArticleData(title);
-    const depth = getDepth(articleData);
-    const magnitude = getMagnitude(articleData);
-    const location = getLocation(title);
+  for (const eq of results) {
+    if (!eq) continue;
 
-    if (userFilters.depth.unit === 'km') {
-      if (depth.km === 'Unavailable') continue;
-      if (depth.km > userFilters.depth.max || depth.km < userFilters.depth.min) continue;
-    } else if (userFilters.depth.unit === 'mi') {
-      if (depth.mi === 'Unavailable') continue;
-      if (depth.mi > userFilters.depth.max || depth.mi < userFilters.depth.min) continue;
+    if (userFilters.depth.min !== 'Lowest') {
+      if (userFilters.depth.unit === 'km') {
+        if (eq.depth.km === 'Unavailable') continue;
+        if (eq.depth.km < userFilters.depth.min || eq.depth.km > userFilters.depth.max) continue;
+      } else {
+        if (eq.depth.mi === 'Unavailable') continue;
+        if (eq.depth.mi < userFilters.depth.min || eq.depth.mi > userFilters.depth.max) continue;
+      }
     }
 
-    if (magnitude > userFilters.magnitude.max || magnitude < userFilters.magnitude.min) continue;
+    if (userFilters.magnitude.min !== 'Lowest') {
+      if (
+        eq.magnitude < userFilters.magnitude.min ||
+        eq.magnitude > userFilters.magnitude.max
+      ) continue;
+    }
 
-    if (userFilters.location !== 'All' && location.toLowerCase() !== userFilters.location) continue;
-    
-    createEarthquakeObject(title,location,url,depth,magnitude);
-}
+    earthquakesToDisplay.push(eq);
+  }
+
   insertCards();
+
+  console.timeEnd('applyFilters');
 }
+
 function closeSearchPopup() { 
   const closeBtn = document.getElementById('closeSearchPopup');
   closeBtn.addEventListener('click', () => {
@@ -361,16 +380,7 @@ function hideError() {
     popup.close();
   })
 }
-function createEarthquakeObject(title, location, url, depth, magnitude) {
-  let earthquake = {
-    title: title,
-    location: location,
-    url: url,
-    depth: depth,
-    magnitude: magnitude
-  };
-  earthquakesToDisplay.push(earthquake);    
-}
+
 function editCurrentFilters() {
   document.getElementById('yearRange').textContent = `${userFilters.yearRange.start} to ${userFilters.yearRange.end}` //
   document.getElementById('locationDisplay').textContent = userFilters.location; //need to capitalize
@@ -385,5 +395,7 @@ function editCurrentFilters() {
 }
 showSearchPopup();
 getSearchRequirements();
-editCurrentFilters()
+editCurrentFilters();
+applyFilters();
+insertCards();
 
